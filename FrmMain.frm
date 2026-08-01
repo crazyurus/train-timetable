@@ -1,47 +1,101 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
-Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
+Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomct2.ocx"
 Begin VB.Form FrmMain 
+   BorderStyle     =   1  'Fixed Single
    Caption         =   "列车时刻表查询"
-   ClientHeight    =   6360
-   ClientLeft      =   60
-   ClientTop       =   405
-   ClientWidth     =   9255
+   ClientHeight    =   5430
+   ClientLeft      =   45
+   ClientTop       =   390
+   ClientWidth     =   9030
+   BeginProperty Font 
+      Name            =   "微软雅黑"
+      Size            =   9
+      Charset         =   134
+      Weight          =   400
+      Underline       =   0   'False
+      Italic          =   0   'False
+      Strikethrough   =   0   'False
+   EndProperty
    LinkTopic       =   "Form1"
-   ScaleHeight     =   6360
-   ScaleWidth      =   9255
+   MaxButton       =   0   'False
+   ScaleHeight     =   5400
+   ScaleMode       =   0  'User
+   ScaleWidth      =   9030
    StartUpPosition =   2  '屏幕中心
+   Begin MSComctlLib.StatusBar StatusBar1 
+      Align           =   2  'Align Bottom
+      Height          =   375
+      Left            =   0
+      TabIndex        =   7
+      Top             =   5055
+      Width           =   9030
+      _ExtentX        =   15928
+      _ExtentY        =   661
+      _Version        =   393216
+      BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 
+         NumPanels       =   4
+         BeginProperty Panel1 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
+            AutoSize        =   1
+            Object.Width           =   9737
+            Text            =   "制造本程序：Cr4zy Uru5"
+            TextSave        =   "制造本程序：Cr4zy Uru5"
+            Object.ToolTipText     =   "Cr4zy Uru5"
+         EndProperty
+         BeginProperty Panel2 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
+            Object.Width           =   2205
+            MinWidth        =   2205
+            Text            =   "No.2026001"
+            TextSave        =   "No.2026001"
+            Object.ToolTipText     =   "2026年第一个程序"
+         EndProperty
+         BeginProperty Panel3 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
+            Style           =   6
+            Object.Width           =   2734
+            MinWidth        =   2734
+            TextSave        =   "2026/8/2"
+         EndProperty
+         BeginProperty Panel4 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
+            Style           =   5
+            Object.Width           =   1147
+            MinWidth        =   1147
+            TextSave        =   "0:35"
+         EndProperty
+      EndProperty
+   End
    Begin VB.TextBox txtTrainNo 
-      Height          =   315
-      Left            =   4800
+      Height          =   375
+      Left            =   4560
       TabIndex        =   2
       Top             =   240
-      Width           =   1935
+      Width           =   2775
    End
    Begin VB.ListBox lstSuggest 
-      Height          =   1815
-      Left            =   4800
-      TabIndex        =   10
+      Height          =   1590
+      Left            =   4560
+      TabIndex        =   0
       Top             =   600
       Visible         =   0   'False
-      Width           =   1935
+      Width           =   2775
    End
    Begin VB.CommandButton cmdQuery 
       Caption         =   "查询"
+      Default         =   -1  'True
       Height          =   375
-      Left            =   7080
+      Left            =   7680
       TabIndex        =   3
-      Top             =   210
-      Width           =   1215
+      Top             =   240
+      Width           =   1095
    End
    Begin MSComctlLib.ListView lvResult 
-      Height          =   4695
+      Height          =   4215
       Left            =   240
       TabIndex        =   4
-      Top             =   1440
-      Width           =   8775
-      _ExtentX        =   15478
-      _ExtentY        =   8281
+      Top             =   720
+      Width           =   8535
+      _ExtentX        =   15055
+      _ExtentY        =   7435
+      View            =   3
       LabelWrap       =   -1  'True
       HideSelection   =   -1  'True
       FullRowSelect   =   -1  'True
@@ -51,73 +105,85 @@ Begin VB.Form FrmMain
       BackColor       =   -2147483643
       BorderStyle     =   1
       Appearance      =   1
-      View            =   3
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "微软雅黑"
+         Size            =   9
+         Charset         =   134
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       NumItems        =   6
-      BeginProperty ColumnHeader(1) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+      BeginProperty ColumnHeader(1) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
          Text            =   "站序"
          Object.Width           =   1058
       EndProperty
-      BeginProperty ColumnHeader(2) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+      BeginProperty ColumnHeader(2) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
          Text            =   "车站"
          Object.Width           =   2645
       EndProperty
-      BeginProperty ColumnHeader(3) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+      BeginProperty ColumnHeader(3) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
          Text            =   "车次"
          Object.Width           =   2116
       EndProperty
-      BeginProperty ColumnHeader(4) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+      BeginProperty ColumnHeader(4) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
          Text            =   "出发时间"
          Object.Width           =   2116
       EndProperty
-      BeginProperty ColumnHeader(5) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+      BeginProperty ColumnHeader(5) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
          Text            =   "到达时间"
          Object.Width           =   2116
       EndProperty
-      BeginProperty ColumnHeader(6) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+      BeginProperty ColumnHeader(6) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
          Text            =   "历时"
          Object.Width           =   2645
       EndProperty
    End
-   Begin VB.Label lblStatus 
-      Caption         =   "就绪"
-      Height          =   255
-      Left            =   240
-      TabIndex        =   9
-      Top             =   6120
-      Width           =   5295
-   End
-   Begin VB.Label Label3 
-      Caption         =   "车次："
-      Height          =   255
-      Left            =   4200
-      TabIndex        =   8
-      Top             =   280
-      Width           =   615
-   End
-   Begin VB.Label Label2 
-      Caption         =   "日期："
-      Height          =   255
-      Left            =   720
-      TabIndex        =   7
-      Top             =   280
-      Width           =   615
-   End
    Begin MSComCtl2.DTPicker dtpDate 
-      Height          =   315
-      Left            =   1320
+      Height          =   375
+      Left            =   840
       TabIndex        =   1
       Top             =   240
-      Width           =   2535
-      _ExtentX        =   4471
-      _ExtentY        =   556
+      Width           =   2775
+      _ExtentX        =   4895
+      _ExtentY        =   661
       _Version        =   393216
-      Format          =   1
+      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
+         Name            =   "微软雅黑"
+         Size            =   9
+         Charset         =   134
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
       CustomFormat    =   "yyyy-MM-dd"
+      Format          =   150601729
+      CurrentDate     =   36494
    End
    Begin VB.Timer tmrDebounce 
       Interval        =   300
-      Left            =   4560
-      Top             =   720
+      Left            =   7440
+      Top             =   120
+   End
+   Begin VB.Label Label3 
+      AutoSize        =   -1  'True
+      Caption         =   "车次："
+      Height          =   255
+      Left            =   3960
+      TabIndex        =   5
+      Top             =   300
+      Width           =   540
+   End
+   Begin VB.Label Label2 
+      AutoSize        =   -1  'True
+      Caption         =   "日期："
+      Height          =   255
+      Left            =   240
+      TabIndex        =   6
+      Top             =   300
+      Width           =   540
    End
 End
 Attribute VB_Name = "FrmMain"
@@ -152,7 +218,6 @@ Private m_lngStationCount As Long
 
 Private Sub Form_Load()
     dtpDate.Value = Date
-    lblStatus.Caption = "就绪"
     m_lngSearchCount = 0
     m_lngStationCount = 0
 End Sub
@@ -237,7 +302,7 @@ Private Sub SearchTrainSuggest()
         Exit Sub
     End If
     strDate = Format(dtpDate.Value, "yyyyMMdd")
-    lblStatus.Caption = "正在搜索车次..."
+    StatusBar.Panels(1).Text = "正在搜索车次..."
     strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & _
              EncodeURL(strKeyword) & "&date=" & strDate
     strResponse = HttpGet(strUrl)
@@ -252,10 +317,10 @@ Private Sub SearchTrainSuggest()
     Else
         lstSuggest.Visible = False
     End If
-    lblStatus.Caption = "找到 " & m_lngSearchCount & " 个车次"
+    StatusBar.Panels(1).Text = "找到 " & m_lngSearchCount & " 个车次"
     Exit Sub
 ErrorHandler:
-    lblStatus.Caption = "搜索出错: " & Err.Description
+    StatusBar.Panels(1).Text = "搜索出错: " & Err.Description
     lstSuggest.Visible = False
 End Sub
 
@@ -311,7 +376,7 @@ Private Sub cmdQuery_Click()
     If InStr(strTrainCode, " ") > 0 Then
         strTrainCode = Left(strTrainCode, InStr(strTrainCode, " ") - 1)
     End If
-    lblStatus.Caption = "正在查询列车时刻表..."
+    StatusBar.Panels(1).Text = "正在查询列车时刻表..."
     cmdQuery.Enabled = False
     lstSuggest.Visible = False
     strDate = Format(dtpDate.Value, "yyyyMMdd")
@@ -335,7 +400,7 @@ Private Sub cmdQuery_Click()
     Next i
     If Not blnFound Then
         MsgBox "未找到车次 " & strTrainCode, vbExclamation
-        lblStatus.Caption = "未找到车次"
+        StatusBar.Panels(1).Text = "未找到车次"
         cmdQuery.Enabled = True
         Exit Sub
     End If
@@ -346,12 +411,12 @@ Private Sub cmdQuery_Click()
     strResponse = HttpGet(strUrl)
     ParseStationInfo strResponse, strTrainCode
     ShowResults strTrainCode
-    lblStatus.Caption = "查询完成，共 " & m_lngStationCount & " 个车站"
+    StatusBar.Panels(1).Text = "查询完成，共 " & m_lngStationCount & " 个车站"
     cmdQuery.Enabled = True
     Exit Sub
 ErrorHandler:
     MsgBox "查询出错: " & Err.Description, vbCritical
-    lblStatus.Caption = "查询出错"
+    StatusBar.Panels(1).Text = "查询出错"
     cmdQuery.Enabled = True
 End Sub
 
@@ -413,15 +478,5 @@ Private Sub ShowResults(ByVal strTrainCode As String)
         End If
         itm.SubItems(5) = strLishi
     Next i
-End Sub
-
-Private Sub Form_Resize()
-    On Error Resume Next
-    If Me.WindowState <> vbMinimized Then
-        lvResult.Width = Me.ScaleWidth - 480
-        lvResult.Height = Me.ScaleHeight - 1920
-        lblStatus.Top = Me.ScaleHeight - 240
-        lblStatus.Width = Me.ScaleWidth - 480
-    End If
 End Sub
 

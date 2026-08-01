@@ -59,75 +59,26 @@ Public Function HttpGet(ByVal strUrl As String) As String
     On Error GoTo ErrorHandler
     With objHttp
         .Open "GET", strUrl, False
-        .setRequestHeader "Accept", "application/json, text/plain, */*"
-        .setRequestHeader "Accept-Language", "zh-CN,zh;q=0.9"
-        .setRequestHeader "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        .setRequestHeader "Referer", "https://kyfw.12306.cn/otn/queryTrainInfo/init"
-        .setRequestHeader "Origin", "https://kyfw.12306.cn"
-        .setRequestHeader "Connection", "keep-alive"
-        .setRequestHeader "Cache-Control", "no-cache"
         .Send
-        .waitForResponse 10000
-        strResult = .responseText
+        .WaitForResponse 10000
+        strResult = .ResponseText
     End With
     HttpGet = strResult
     Set objHttp = Nothing
     Exit Function
 ErrorHandler:
-    On Error Resume Next
-    Set objHttp = CreateObject("WinHttp.WinHttpRequest.5.1")
-    If Not objHttp Is Nothing Then
-        objHttp.Option(4) = objHttp.Option(4) Or 128
-        With objHttp
-            .Open "GET", strUrl, False
-            .SetRequestHeader "Accept", "application/json, text/plain, */*"
-            .SetRequestHeader "Accept-Language", "zh-CN,zh;q=0.9"
-            .SetRequestHeader "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-            .SetRequestHeader "Referer", "https://kyfw.12306.cn/otn/queryTrainInfo/init"
-            .SetRequestHeader "Origin", "https://kyfw.12306.cn"
-            .Send
-            .WaitForResponse 10000
-            strResult = .ResponseText
-        End With
-        HttpGet = strResult
-        Set objHttp = Nothing
-        Exit Function
-    End If
     Err.Raise vbObjectError + 1001, "HttpGet", "HTTPÇëÇóÊ§°Ü: " & Err.Description
 End Function
 
 Public Function EncodeURL(ByVal strText As String) As String
     Dim objScr As Object
     Dim strResult As String
-    On Error GoTo Fallback
+
     Set objScr = CreateObject("MSScriptControl.ScriptControl")
     objScr.Language = "JScript"
     strResult = objScr.CodeObject.encodeURIComponent(strText)
     EncodeURL = strResult
     Set objScr = Nothing
-    Exit Function
-Fallback:
-    Dim i As Long
-    Dim strChr As String
-    Dim strOut As String
-    strOut = ""
-    For i = 1 To Len(strText)
-        strChr = Mid(strText, i, 1)
-        If (strChr >= "A" And strChr <= "Z") Or _
-           (strChr >= "a" And strChr <= "z") Or _
-           (strChr >= "0" And strChr <= "9") Or _
-           InStr("-_.~", strChr) > 0 Then
-            strOut = strOut & strChr
-        Else
-            Dim byt() As Byte
-            byt = StrConv(strChr, vbFromUnicode)
-            Dim j As Integer
-            For j = 0 To UBound(byt)
-                strOut = strOut & "%" & Right("0" & Hex(byt(j)), 2)
-            Next j
-        End If
-    Next i
-    EncodeURL = strOut
 End Function
 
 Public Function SplitJsonObject(ByVal strJson As String) As String()
