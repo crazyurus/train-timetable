@@ -415,7 +415,7 @@ Private Sub cmdQuery_Click()
     strResponse = HttpGet(strUrl)
     ParseStationInfo strResponse, strTrainCode
     ShowResults strTrainCode
-    StatusBar.Panels(1).Text = "查询完成，共 " & m_lngStationCount & " 个车站"
+    StatusBar.Panels(1).Text = "查询完成，全程共有 " & m_lngStationCount & " 个停靠站"
     cmdQuery.Enabled = True
     Exit Sub
 ErrorHandler:
