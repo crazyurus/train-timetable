@@ -23,7 +23,7 @@ Begin VB.Form FrmMain
    ScaleMode       =   0  'User
    ScaleWidth      =   9030
    StartUpPosition =   2  '屏幕中心
-   Begin MSComctlLib.StatusBar StatusBar1 
+   Begin MSComctlLib.StatusBar StatusBar 
       Align           =   2  'Align Bottom
       Height          =   375
       Left            =   0
@@ -59,7 +59,7 @@ Begin VB.Form FrmMain
             Style           =   5
             Object.Width           =   1147
             MinWidth        =   1147
-            TextSave        =   "0:35"
+            TextSave        =   "2:16"
          EndProperty
       EndProperty
    End
@@ -72,7 +72,9 @@ Begin VB.Form FrmMain
    End
    Begin VB.ListBox lstSuggest 
       Height          =   1590
+      ItemData        =   "FrmMain.frx":0000
       Left            =   4560
+      List            =   "FrmMain.frx":0002
       TabIndex        =   0
       Top             =   600
       Visible         =   0   'False
@@ -114,7 +116,7 @@ Begin VB.Form FrmMain
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      NumItems        =   6
+      NumItems        =   7
       BeginProperty ColumnHeader(1) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
          Text            =   "站序"
          Object.Width           =   1058
@@ -139,6 +141,10 @@ Begin VB.Form FrmMain
          Text            =   "历时"
          Object.Width           =   2645
       EndProperty
+      BeginProperty ColumnHeader(7) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
+         Text            =   "备注"
+         Object.Width           =   1763
+      EndProperty
    End
    Begin MSComCtl2.DTPicker dtpDate 
       Height          =   375
@@ -159,7 +165,7 @@ Begin VB.Form FrmMain
          Strikethrough   =   0   'False
       EndProperty
       CustomFormat    =   "yyyy-MM-dd"
-      Format          =   150601729
+      Format          =   150405121
       CurrentDate     =   36494
    End
    Begin VB.Timer tmrDebounce 
@@ -211,10 +217,15 @@ Private Type StationInfo
     arrive_time As String
     start_time As String
     stopover_time As String
+    arrive_day_str As String
+    running_time As String
 End Type
 
 Private m_arrStations() As StationInfo
 Private m_lngStationCount As Long
+Private m_blnSkipChange As Boolean
+Private m_asyncSuggest As AsyncRequest
+Private m_strPendingKeyword As String
 
 Private Sub Form_Load()
     dtpDate.Value = Date
@@ -223,6 +234,7 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub txtTrainNo_Change()
+    If m_blnSkipChange = True Then Exit Sub
     If Len(Trim(txtTrainNo.Text)) >= 1 Then
         tmrDebounce.Enabled = False
         tmrDebounce.Enabled = True
@@ -237,55 +249,12 @@ Private Sub tmrDebounce_Timer()
     SearchTrainSuggest
 End Sub
 
-Private Sub txtTrainNo_KeyDown(KeyCode As Integer, Shift As Integer)
-    If lstSuggest.Visible Then
-        Select Case KeyCode
-            Case vbKeyDown
-                If lstSuggest.ListCount > 0 Then
-                    If lstSuggest.ListIndex < lstSuggest.ListCount - 1 Then
-                        lstSuggest.ListIndex = lstSuggest.ListIndex + 1
-                    End If
-                    KeyCode = 0
-                End If
-            Case vbKeyUp
-                If lstSuggest.ListIndex > 0 Then
-                    lstSuggest.ListIndex = lstSuggest.ListIndex - 1
-                    KeyCode = 0
-                End If
-            Case vbKeyReturn
-                If lstSuggest.ListIndex >= 0 Then
-                    txtTrainNo.Text = lstSuggest.List(lstSuggest.ListIndex)
-                    lstSuggest.Visible = False
-                    cmdQuery.SetFocus
-                End If
-                KeyCode = 0
-            Case vbKeyEscape
-                lstSuggest.Visible = False
-                KeyCode = 0
-        End Select
-    Else
-        If KeyCode = vbKeyReturn Then
-            cmdQuery_Click
-        End If
-    End If
-End Sub
-
 Private Sub lstSuggest_Click()
     If lstSuggest.ListIndex >= 0 Then
+        m_blnSkipChange = True
         txtTrainNo.Text = lstSuggest.List(lstSuggest.ListIndex)
+        m_blnSkipChange = False
         lstSuggest.Visible = False
-        cmdQuery.SetFocus
-    End If
-End Sub
-
-Private Sub lstSuggest_KeyPress(KeyAscii As Integer)
-    If KeyAscii = 13 Then
-        If lstSuggest.ListIndex >= 0 Then
-            txtTrainNo.Text = lstSuggest.List(lstSuggest.ListIndex)
-            lstSuggest.Visible = False
-            cmdQuery.SetFocus
-        End If
-        KeyAscii = 0
     End If
 End Sub
 
@@ -293,33 +262,68 @@ Private Sub SearchTrainSuggest()
     Dim strKeyword As String
     Dim strDate As String
     Dim strUrl As String
-    Dim strResponse As String
-    Dim i As Long
     On Error GoTo ErrorHandler
     strKeyword = Trim(txtTrainNo.Text)
     If Len(strKeyword) = 0 Then
         lstSuggest.Visible = False
         Exit Sub
     End If
+    On Error Resume Next
+    If Not m_asyncSuggest Is Nothing Then
+        m_asyncSuggest.Abort
+    End If
+    Set m_asyncSuggest = Nothing
+    On Error GoTo ErrorHandler
+    m_strPendingKeyword = strKeyword
     strDate = Format(dtpDate.Value, "yyyyMMdd")
     StatusBar.Panels(1).Text = "正在搜索车次..."
     strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & _
              EncodeURL(strKeyword) & "&date=" & strDate
-    strResponse = HttpGet(strUrl)
-    ParseTrainSearchResult strResponse
+    Set m_asyncSuggest = New AsyncRequest
+    m_asyncSuggest.GetRequest strUrl, Me, "OnSuggestComplete"
+    Exit Sub
+ErrorHandler:
+    StatusBar.Panels(1).Text = "搜索出错: " & Err.Description
+    lstSuggest.Visible = False
+End Sub
+
+Public Sub OnSuggestComplete(ByVal status As Long, ByVal responseText As String)
+    Dim i As Long
+    Dim lngShow As Long
+    Dim lngSelStart As Long
+    Dim lngSelLen As Long
+    On Error GoTo ErrHandler
+    If Trim(txtTrainNo.Text) <> m_strPendingKeyword Then Exit Sub
+    If status <> 200 Then
+        StatusBar.Panels(1).Text = "搜索出错: HTTP status " & status
+        lstSuggest.Visible = False
+        Exit Sub
+    End If
+    ParseTrainSearchResult responseText
+    lngSelStart = txtTrainNo.SelStart
+    lngSelLen = txtTrainNo.SelLength
     lstSuggest.Clear
     If m_lngSearchCount > 0 Then
         For i = 0 To m_lngSearchCount - 1
             lstSuggest.AddItem m_arrTrainSearch(i).station_train_code
         Next i
         lstSuggest.ListIndex = 0
+        If lstSuggest.ListCount > 5 Then
+            lngShow = 5
+        Else
+            lngShow = lstSuggest.ListCount
+        End If
+        lstSuggest.Height = lngShow * 315 + 60
         lstSuggest.Visible = True
+        txtTrainNo.SetFocus
+        txtTrainNo.SelStart = lngSelStart
+        txtTrainNo.SelLength = lngSelLen
     Else
         lstSuggest.Visible = False
     End If
     StatusBar.Panels(1).Text = "找到 " & m_lngSearchCount & " 个车次"
     Exit Sub
-ErrorHandler:
+ErrHandler:
     StatusBar.Panels(1).Text = "搜索出错: " & Err.Description
     lstSuggest.Visible = False
 End Sub
@@ -456,6 +460,8 @@ Private Sub ParseStationInfo(ByVal strJson As String, ByVal strTrainCode As Stri
             .arrive_time = GetJsonValue(strItem, "arrive_time")
             .start_time = GetJsonValue(strItem, "start_time")
             .stopover_time = GetJsonValue(strItem, "stopover_time")
+            .arrive_day_str = GetJsonValue(strItem, "arrive_day_str")
+            .running_time = GetJsonValue(strItem, "running_time")
         End With
     Next i
 End Sub
@@ -473,10 +479,20 @@ Private Sub ShowResults(ByVal strTrainCode As String)
         itm.SubItems(4) = m_arrStations(i).arrive_time
         If i = 0 Then
             strLishi = "----"
+        ElseIf Len(Trim(m_arrStations(i).running_time)) > 0 Then
+            strLishi = m_arrStations(i).running_time
         Else
-            strLishi = CalcDuration(m_arrStations(0).start_time, m_arrStations(i).arrive_time)
+            strLishi = "----"
         End If
         itm.SubItems(5) = strLishi
+        itm.SubItems(6) = m_arrStations(i).arrive_day_str
     Next i
 End Sub
 
+Private Sub Form_Unload(Cancel As Integer)
+    On Error Resume Next
+    If Not m_asyncSuggest Is Nothing Then
+        m_asyncSuggest.Abort
+        Set m_asyncSuggest = Nothing
+    End If
+End Sub

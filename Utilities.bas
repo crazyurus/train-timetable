@@ -1,27 +1,6 @@
 Attribute VB_Name = "Utilities"
 Option Explicit
 
-Public Function CalcDuration(ByVal strStartTime As String, ByVal strEndTime As String) As String
-    Dim dblStart As Double
-    Dim dblEnd As Double
-    Dim lngMinutes As Long
-    Dim intHours As Integer
-    Dim intMins As Integer
-    On Error Resume Next
-    If Len(strStartTime) >= 5 And Len(strEndTime) >= 5 Then
-        dblStart = TimeValue(Left(strStartTime, 5))
-        dblEnd = TimeValue(Left(strEndTime, 5))
-        lngMinutes = DateDiff("n", dblStart, dblEnd)
-        If lngMinutes < 0 Then
-            lngMinutes = lngMinutes + 24 * 60
-        End If
-        intHours = lngMinutes \ 60
-        intMins = lngMinutes Mod 60
-        CalcDuration = Format(intHours, "00") & ":" & Format(intMins, "00")
-    Else
-        CalcDuration = "----"
-    End If
-End Function
 
 Public Function GetJsonArray(ByVal strJson As String) As String
     Dim lngBracket As Long
@@ -61,7 +40,7 @@ Public Function HttpGet(ByVal strUrl As String) As String
         .Open "GET", strUrl, False
         .Send
         .WaitForResponse 10000
-        strResult = .ResponseText
+        strResult = .responseText
     End With
     HttpGet = strResult
     Set objHttp = Nothing
