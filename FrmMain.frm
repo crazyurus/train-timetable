@@ -1,0 +1,427 @@
+VERSION 5.00
+Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
+Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "MSCOMCT2.OCX"
+Begin VB.Form FrmMain 
+   Caption         =   "列车时刻表查询"
+   ClientHeight    =   6360
+   ClientLeft      =   60
+   ClientTop       =   405
+   ClientWidth     =   9255
+   LinkTopic       =   "Form1"
+   ScaleHeight     =   6360
+   ScaleWidth      =   9255
+   StartUpPosition =   2  '屏幕中心
+   Begin VB.TextBox txtTrainNo 
+      Height          =   315
+      Left            =   4800
+      TabIndex        =   2
+      Top             =   240
+      Width           =   1935
+   End
+   Begin VB.ListBox lstSuggest 
+      Height          =   1815
+      Left            =   4800
+      TabIndex        =   10
+      Top             =   600
+      Visible         =   0   'False
+      Width           =   1935
+   End
+   Begin VB.CommandButton cmdQuery 
+      Caption         =   "查询"
+      Height          =   375
+      Left            =   7080
+      TabIndex        =   3
+      Top             =   210
+      Width           =   1215
+   End
+   Begin MSComctlLib.ListView lvResult 
+      Height          =   4695
+      Left            =   240
+      TabIndex        =   4
+      Top             =   1440
+      Width           =   8775
+      _ExtentX        =   15478
+      _ExtentY        =   8281
+      LabelWrap       =   -1  'True
+      HideSelection   =   -1  'True
+      FullRowSelect   =   -1  'True
+      GridLines       =   -1  'True
+      _Version        =   393217
+      ForeColor       =   -2147483640
+      BackColor       =   -2147483643
+      BorderStyle     =   1
+      Appearance      =   1
+      View            =   3
+      NumItems        =   6
+      BeginProperty ColumnHeader(1) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+         Text            =   "站序"
+         Object.Width           =   1058
+      EndProperty
+      BeginProperty ColumnHeader(2) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+         Text            =   "车站"
+         Object.Width           =   2645
+      EndProperty
+      BeginProperty ColumnHeader(3) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+         Text            =   "车次"
+         Object.Width           =   2116
+      EndProperty
+      BeginProperty ColumnHeader(4) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+         Text            =   "出发时间"
+         Object.Width           =   2116
+      EndProperty
+      BeginProperty ColumnHeader(5) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+         Text            =   "到达时间"
+         Object.Width           =   2116
+      EndProperty
+      BeginProperty ColumnHeader(6) {BDD1F052-858B-11D1-B16A-00C0F0283628}
+         Text            =   "历时"
+         Object.Width           =   2645
+      EndProperty
+   End
+   Begin VB.Label lblStatus 
+      Caption         =   "就绪"
+      Height          =   255
+      Left            =   240
+      TabIndex        =   9
+      Top             =   6120
+      Width           =   5295
+   End
+   Begin VB.Label Label3 
+      Caption         =   "车次："
+      Height          =   255
+      Left            =   4200
+      TabIndex        =   8
+      Top             =   280
+      Width           =   615
+   End
+   Begin VB.Label Label2 
+      Caption         =   "日期："
+      Height          =   255
+      Left            =   720
+      TabIndex        =   7
+      Top             =   280
+      Width           =   615
+   End
+   Begin MSComCtl2.DTPicker dtpDate 
+      Height          =   315
+      Left            =   1320
+      TabIndex        =   1
+      Top             =   240
+      Width           =   2535
+      _ExtentX        =   4471
+      _ExtentY        =   556
+      _Version        =   393216
+      Format          =   1
+      CustomFormat    =   "yyyy-MM-dd"
+   End
+   Begin VB.Timer tmrDebounce 
+      Interval        =   300
+      Left            =   4560
+      Top             =   720
+   End
+End
+Attribute VB_Name = "FrmMain"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = False
+Attribute VB_PredeclaredId = True
+Attribute VB_Exposed = False
+Option Explicit
+
+Private Type TrainSearchResult
+    train_no As String
+    station_train_code As String
+    from_station_name As String
+    to_station_name As String
+    start_time As String
+    arrive_time As String
+End Type
+
+Private m_arrTrainSearch() As TrainSearchResult
+Private m_lngSearchCount As Long
+
+Private Type StationInfo
+    station_no As String
+    station_name As String
+    arrive_time As String
+    start_time As String
+    stopover_time As String
+End Type
+
+Private m_arrStations() As StationInfo
+Private m_lngStationCount As Long
+
+Private Sub Form_Load()
+    dtpDate.Value = Date
+    lblStatus.Caption = "就绪"
+    m_lngSearchCount = 0
+    m_lngStationCount = 0
+End Sub
+
+Private Sub txtTrainNo_Change()
+    If Len(Trim(txtTrainNo.Text)) >= 1 Then
+        tmrDebounce.Enabled = False
+        tmrDebounce.Enabled = True
+    Else
+        tmrDebounce.Enabled = False
+        lstSuggest.Visible = False
+    End If
+End Sub
+
+Private Sub tmrDebounce_Timer()
+    tmrDebounce.Enabled = False
+    SearchTrainSuggest
+End Sub
+
+Private Sub txtTrainNo_KeyDown(KeyCode As Integer, Shift As Integer)
+    If lstSuggest.Visible Then
+        Select Case KeyCode
+            Case vbKeyDown
+                If lstSuggest.ListCount > 0 Then
+                    If lstSuggest.ListIndex < lstSuggest.ListCount - 1 Then
+                        lstSuggest.ListIndex = lstSuggest.ListIndex + 1
+                    End If
+                    KeyCode = 0
+                End If
+            Case vbKeyUp
+                If lstSuggest.ListIndex > 0 Then
+                    lstSuggest.ListIndex = lstSuggest.ListIndex - 1
+                    KeyCode = 0
+                End If
+            Case vbKeyReturn
+                If lstSuggest.ListIndex >= 0 Then
+                    txtTrainNo.Text = lstSuggest.List(lstSuggest.ListIndex)
+                    lstSuggest.Visible = False
+                    cmdQuery.SetFocus
+                End If
+                KeyCode = 0
+            Case vbKeyEscape
+                lstSuggest.Visible = False
+                KeyCode = 0
+        End Select
+    Else
+        If KeyCode = vbKeyReturn Then
+            cmdQuery_Click
+        End If
+    End If
+End Sub
+
+Private Sub lstSuggest_Click()
+    If lstSuggest.ListIndex >= 0 Then
+        txtTrainNo.Text = lstSuggest.List(lstSuggest.ListIndex)
+        lstSuggest.Visible = False
+        cmdQuery.SetFocus
+    End If
+End Sub
+
+Private Sub lstSuggest_KeyPress(KeyAscii As Integer)
+    If KeyAscii = 13 Then
+        If lstSuggest.ListIndex >= 0 Then
+            txtTrainNo.Text = lstSuggest.List(lstSuggest.ListIndex)
+            lstSuggest.Visible = False
+            cmdQuery.SetFocus
+        End If
+        KeyAscii = 0
+    End If
+End Sub
+
+Private Sub SearchTrainSuggest()
+    Dim strKeyword As String
+    Dim strDate As String
+    Dim strUrl As String
+    Dim strResponse As String
+    Dim i As Long
+    On Error GoTo ErrorHandler
+    strKeyword = Trim(txtTrainNo.Text)
+    If Len(strKeyword) = 0 Then
+        lstSuggest.Visible = False
+        Exit Sub
+    End If
+    strDate = Format(dtpDate.Value, "yyyyMMdd")
+    lblStatus.Caption = "正在搜索车次..."
+    strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & _
+             EncodeURL(strKeyword) & "&date=" & strDate
+    strResponse = HttpGet(strUrl)
+    ParseTrainSearchResult strResponse
+    lstSuggest.Clear
+    If m_lngSearchCount > 0 Then
+        For i = 0 To m_lngSearchCount - 1
+            lstSuggest.AddItem m_arrTrainSearch(i).station_train_code
+        Next i
+        lstSuggest.ListIndex = 0
+        lstSuggest.Visible = True
+    Else
+        lstSuggest.Visible = False
+    End If
+    lblStatus.Caption = "找到 " & m_lngSearchCount & " 个车次"
+    Exit Sub
+ErrorHandler:
+    lblStatus.Caption = "搜索出错: " & Err.Description
+    lstSuggest.Visible = False
+End Sub
+
+Private Sub ParseTrainSearchResult(ByVal strJson As String)
+    Dim strData As String
+    Dim strItems() As String
+    Dim lngCount As Long
+    Dim i As Long
+    Dim strItem As String
+    m_lngSearchCount = 0
+    If InStr(strJson, """data"":") = 0 Then Exit Sub
+    strData = Mid(strJson, InStr(strJson, """data"":") + 7)
+    strData = Trim(strData)
+    If InStr(strData, "[") > 0 Then
+        strData = Mid(strData, InStr(strData, "["))
+        strData = GetJsonArray(strData)
+    End If
+    If Len(strData) = 0 Then Exit Sub
+    strItems = SplitJsonObject(strData)
+    lngCount = UBound(strItems) + 1
+    If lngCount = 0 Then Exit Sub
+    ReDim m_arrTrainSearch(0 To lngCount - 1)
+    m_lngSearchCount = lngCount
+    For i = 0 To lngCount - 1
+        strItem = strItems(i)
+        With m_arrTrainSearch(i)
+            .train_no = GetJsonValue(strItem, "train_no")
+            .station_train_code = GetJsonValue(strItem, "station_train_code")
+            .from_station_name = GetJsonValue(strItem, "from_station_name")
+            .to_station_name = GetJsonValue(strItem, "to_station_name")
+            .start_time = GetJsonValue(strItem, "start_time")
+            .arrive_time = GetJsonValue(strItem, "arrive_time")
+        End With
+    Next i
+End Sub
+
+Private Sub cmdQuery_Click()
+    Dim strTrainCode As String
+    Dim strDate As String
+    Dim strDateDash As String
+    Dim strUrl As String
+    Dim strResponse As String
+    Dim i As Long
+    Dim blnFound As Boolean
+    Dim strTrainNoFull As String
+    On Error GoTo ErrorHandler
+    strTrainCode = Trim(txtTrainNo.Text)
+    If Len(strTrainCode) = 0 Then
+        MsgBox "请输入车次号", vbExclamation
+        txtTrainNo.SetFocus
+        Exit Sub
+    End If
+    If InStr(strTrainCode, " ") > 0 Then
+        strTrainCode = Left(strTrainCode, InStr(strTrainCode, " ") - 1)
+    End If
+    lblStatus.Caption = "正在查询列车时刻表..."
+    cmdQuery.Enabled = False
+    lstSuggest.Visible = False
+    strDate = Format(dtpDate.Value, "yyyyMMdd")
+    strDateDash = Format(dtpDate.Value, "yyyy-MM-dd")
+    If m_lngSearchCount = 0 Or _
+       (m_lngSearchCount > 0 And _
+        StrComp(m_arrTrainSearch(0).station_train_code, strTrainCode, vbTextCompare) <> 0) Then
+        strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & _
+                 EncodeURL(strTrainCode) & "&date=" & strDate
+        strResponse = HttpGet(strUrl)
+        ParseTrainSearchResult strResponse
+    End If
+    blnFound = False
+    strTrainNoFull = ""
+    For i = 0 To m_lngSearchCount - 1
+        If StrComp(m_arrTrainSearch(i).station_train_code, strTrainCode, vbTextCompare) = 0 Then
+            strTrainNoFull = m_arrTrainSearch(i).train_no
+            blnFound = True
+            Exit For
+        End If
+    Next i
+    If Not blnFound Then
+        MsgBox "未找到车次 " & strTrainCode, vbExclamation
+        lblStatus.Caption = "未找到车次"
+        cmdQuery.Enabled = True
+        Exit Sub
+    End If
+    strUrl = "https://kyfw.12306.cn/otn/queryTrainInfo/query?" & _
+             "leftTicketDTO.train_no=" & EncodeURL(strTrainNoFull) & _
+             "&leftTicketDTO.train_date=" & strDateDash & _
+             "&rand_code="
+    strResponse = HttpGet(strUrl)
+    ParseStationInfo strResponse, strTrainCode
+    ShowResults strTrainCode
+    lblStatus.Caption = "查询完成，共 " & m_lngStationCount & " 个车站"
+    cmdQuery.Enabled = True
+    Exit Sub
+ErrorHandler:
+    MsgBox "查询出错: " & Err.Description, vbCritical
+    lblStatus.Caption = "查询出错"
+    cmdQuery.Enabled = True
+End Sub
+
+Private Sub ParseStationInfo(ByVal strJson As String, ByVal strTrainCode As String)
+    Dim strData As String
+    Dim strItems() As String
+    Dim lngCount As Long
+    Dim i As Long
+    Dim strItem As String
+    Dim lngPos1 As Long
+    Dim lngPos2 As Long
+    m_lngStationCount = 0
+    lngPos1 = InStr(strJson, """data"":")
+    If lngPos1 = 0 Then Exit Sub
+    lngPos2 = InStr(lngPos1 + 10, strJson, """data"":")
+    If lngPos2 = 0 Then
+        strData = Mid(strJson, lngPos1 + 7)
+    Else
+        strData = Mid(strJson, lngPos2 + 7)
+    End If
+    strData = Trim(strData)
+    If InStr(strData, "[") > 0 Then
+        strData = Mid(strData, InStr(strData, "["))
+        strData = GetJsonArray(strData)
+    End If
+    If Len(strData) = 0 Then Exit Sub
+    strItems = SplitJsonObject(strData)
+    lngCount = UBound(strItems) + 1
+    If lngCount = 0 Then Exit Sub
+    ReDim m_arrStations(0 To lngCount - 1)
+    m_lngStationCount = lngCount
+    For i = 0 To lngCount - 1
+        strItem = strItems(i)
+        With m_arrStations(i)
+            .station_no = GetJsonValue(strItem, "station_no")
+            .station_name = GetJsonValue(strItem, "station_name")
+            .arrive_time = GetJsonValue(strItem, "arrive_time")
+            .start_time = GetJsonValue(strItem, "start_time")
+            .stopover_time = GetJsonValue(strItem, "stopover_time")
+        End With
+    Next i
+End Sub
+
+Private Sub ShowResults(ByVal strTrainCode As String)
+    Dim i As Long
+    Dim itm As ListItem
+    Dim strLishi As String
+    lvResult.ListItems.Clear
+    For i = 0 To m_lngStationCount - 1
+        Set itm = lvResult.ListItems.Add(, , m_arrStations(i).station_no)
+        itm.SubItems(1) = m_arrStations(i).station_name
+        itm.SubItems(2) = strTrainCode
+        itm.SubItems(3) = m_arrStations(i).start_time
+        itm.SubItems(4) = m_arrStations(i).arrive_time
+        If i = 0 Then
+            strLishi = "----"
+        Else
+            strLishi = CalcDuration(m_arrStations(0).start_time, m_arrStations(i).arrive_time)
+        End If
+        itm.SubItems(5) = strLishi
+    Next i
+End Sub
+
+Private Sub Form_Resize()
+    On Error Resume Next
+    If Me.WindowState <> vbMinimized Then
+        lvResult.Width = Me.ScaleWidth - 480
+        lvResult.Height = Me.ScaleHeight - 1920
+        lblStatus.Top = Me.ScaleHeight - 240
+        lblStatus.Width = Me.ScaleWidth - 480
+    End If
+End Sub
+
