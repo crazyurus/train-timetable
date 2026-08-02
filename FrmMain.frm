@@ -59,7 +59,7 @@ Begin VB.Form FrmMain
             Style           =   5
             Object.Width           =   1147
             MinWidth        =   1147
-            TextSave        =   "22:31"
+            TextSave        =   "23:33"
          EndProperty
       EndProperty
    End
@@ -163,7 +163,7 @@ Begin VB.Form FrmMain
          Strikethrough   =   0   'False
       EndProperty
       CustomFormat    =   "yyyy-MM-dd"
-      Format          =   149553153
+      Format          =   150732801
       CurrentDate     =   36494
    End
    Begin VB.Timer tmrDebounce 
@@ -231,7 +231,7 @@ Private m_strPQ_Date As String
 Private m_strPQ_DateDash As String
 
 Private Sub Form_Load()
-    dtpDate.Value = Date
+    dtpDate.value = Date
     m_lngSearchCount = 0
     m_lngStationCount = 0
 End Sub
@@ -278,7 +278,7 @@ Private Sub SearchTrainSuggest()
     Set m_asyncSuggest = Nothing
     On Error GoTo ErrorHandler
     m_strPendingKeyword = strKeyword
-    strDate = Format(dtpDate.Value, "yyyyMMdd")
+    strDate = Format(dtpDate.value, "yyyyMMdd")
     StatusBar.Panels(1).Text = "正在搜索车次..."
     strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & EncodeURL(strKeyword) & "&date=" & strDate
     Set m_asyncSuggest = New AsyncRequest
@@ -366,7 +366,7 @@ Private Sub ParseTrainSearchResult(ByVal strJson As String)
     Next i
     Exit Sub
 ErrHandler:
-    StatusBar.Panels(1).Text = "车次搜索失败: " & Err.Description & " ("")
+    StatusBar.Panels(1).Text = "车次搜索失败: " & Err.Description
     m_lngSearchCount = 0
 End Sub
 
@@ -393,8 +393,8 @@ Private Sub cmdQuery_Click()
     lstSuggest.Visible = False
     m_strPQ_TrainCode = strTrainCode
     m_strPQ_TrainNoFull = ""
-    m_strPQ_Date = Format(dtpDate.Value, "yyyyMMdd")
-    m_strPQ_DateDash = Format(dtpDate.Value, "yyyy-MM-dd")
+    m_strPQ_Date = Format(dtpDate.value, "yyyyMMdd")
+    m_strPQ_DateDash = Format(dtpDate.value, "yyyy-MM-dd")
     If m_lngSearchCount = 0 Or _
        (m_lngSearchCount > 0 And _
         StrComp(m_arrTrainSearch(0).station_train_code, strTrainCode, vbTextCompare) <> 0) Then
