@@ -331,36 +331,43 @@ ErrHandler:
 End Sub
 
 Private Sub ParseTrainSearchResult(ByVal strJson As String)
-    Dim strData As String
-    Dim strItems() As String
+    Dim parser As JSON
+    Dim root As Object
+    Dim dataArr As Object
     Dim lngCount As Long
     Dim i As Long
-    Dim strItem As String
+    Dim itemObj As Object
+    On Error GoTo ErrHandler
     m_lngSearchCount = 0
-    If InStr(strJson, """data"":") = 0 Then Exit Sub
-    strData = Mid(strJson, InStr(strJson, """data"":") + 7)
-    strData = Trim(strData)
-    If InStr(strData, "[") > 0 Then
-        strData = Mid(strData, InStr(strData, "["))
-        strData = GetJsonArray(strData)
-    End If
-    If Len(strData) = 0 Then Exit Sub
-    strItems = SplitJsonObject(strData)
-    lngCount = UBound(strItems) + 1
+    Set parser = New JSON
+    Set root = parser.Parse(strJson)
+    Set parser = Nothing
+    If root Is Nothing Then Exit Sub
+    ' search.12306.cn returns: { data: [ {train_no, station_train_code, from_station, to_station}, ... ] }
+    If Not root.Exists("data") Then Exit Sub
+    Set dataArr = root("data")
+    If TypeName(dataArr) <> "Collection" Then Exit Sub
+    lngCount = dataArr.Count
     If lngCount = 0 Then Exit Sub
     ReDim m_arrTrainSearch(0 To lngCount - 1)
     m_lngSearchCount = lngCount
-    For i = 0 To lngCount - 1
-        strItem = strItems(i)
-        With m_arrTrainSearch(i)
-            .train_no = GetJsonValue(strItem, "train_no")
-            .station_train_code = GetJsonValue(strItem, "station_train_code")
-            .from_station_name = GetJsonValue(strItem, "from_station_name")
-            .to_station_name = GetJsonValue(strItem, "to_station_name")
-            .start_time = GetJsonValue(strItem, "start_time")
-            .arrive_time = GetJsonValue(strItem, "arrive_time")
-        End With
+    For i = 1 To lngCount
+        Set itemObj = dataArr(i)
+        If TypeName(itemObj) = "Dictionary" Then
+            With m_arrTrainSearch(i - 1)
+                If itemObj.Exists("train_no") Then .train_no = CStr(itemObj("train_no")) Else .train_no = ""
+                If itemObj.Exists("station_train_code") Then .station_train_code = CStr(itemObj("station_train_code")) Else .station_train_code = ""
+                If itemObj.Exists("from_station") Then .from_station_name = CStr(itemObj("from_station")) Else .from_station_name = ""
+                If itemObj.Exists("to_station") Then .to_station_name = CStr(itemObj("to_station")) Else .to_station_name = ""
+                If itemObj.Exists("start_time") Then .start_time = CStr(itemObj("start_time")) Else .start_time = ""
+                If itemObj.Exists("arrive_time") Then .arrive_time = CStr(itemObj("arrive_time")) Else .arrive_time = ""
+            End With
+        End If
     Next i
+    Exit Sub
+ErrHandler:
+    StatusBar.Panels(1).Text = "³µ´ÎËÑË÷Ê§°Ü: " & Err.Description & " ("")
+    m_lngSearchCount = 0
 End Sub
 
 Private Sub cmdQuery_Click()
@@ -475,58 +482,61 @@ ErrH:
 End Sub
 
 Private Sub ParseStationInfo(ByVal strJson As String, ByVal strTrainCode As String)
-    Dim strData As String
-    Dim strItems() As String
+    Dim parser As JSON
+    Dim root As Object
+    Dim dataObj As Object
+    Dim dataArr As Object
     Dim lngCount As Long
     Dim i As Long
-    Dim strItem As String
-    Dim lngPos1 As Long
-    Dim lngPos2 As Long
+    Dim itemObj As Object
+    On Error GoTo ErrHandler
     m_lngStationCount = 0
-    lngPos1 = InStr(strJson, """data"":")
-    If lngPos1 = 0 Then Exit Sub
-    lngPos2 = InStr(lngPos1 + 10, strJson, """data"":")
-    If lngPos2 = 0 Then
-        strData = Mid(strJson, lngPos1 + 7)
-    Else
-        strData = Mid(strJson, lngPos2 + 7)
-    End If
-    strData = Trim(strData)
-    If InStr(strData, "[") > 0 Then
-        strData = Mid(strData, InStr(strData, "["))
-        strData = GetJsonArray(strData)
-    End If
-    If Len(strData) = 0 Then Exit Sub
-    strItems = SplitJsonObject(strData)
-    lngCount = UBound(strItems) + 1
+    Set parser = New JSON
+    Set root = parser.Parse(strJson)
+    Set parser = Nothing
+    If root Is Nothing Then Exit Sub
+    ' kyfw.12306.cn returns: { data: { data: [ {station_no, station_name, arrive_time, ...}, ... ] } }
+    If Not root.Exists("data") Then Exit Sub
+    Set dataObj = root("data")
+    If dataObj Is Nothing Then Exit Sub
+    If Not dataObj.Exists("data") Then Exit Sub
+    Set dataArr = dataObj("data")
+    If TypeName(dataArr) <> "Collection" Then Exit Sub
+    lngCount = dataArr.Count
     If lngCount = 0 Then Exit Sub
     ReDim m_arrStations(0 To lngCount - 1)
     m_lngStationCount = lngCount
-    For i = 0 To lngCount - 1
-        strItem = strItems(i)
-        With m_arrStations(i)
-            .station_no = GetJsonValue(strItem, "station_no")
-            .station_name = GetJsonValue(strItem, "station_name")
-            .arrive_time = GetJsonValue(strItem, "arrive_time")
-            .start_time = GetJsonValue(strItem, "start_time")
-            .stopover_time = GetJsonValue(strItem, "stopover_time")
-            .arrive_day_str = GetJsonValue(strItem, "arrive_day_str")
-            .running_time = GetJsonValue(strItem, "running_time")
-        End With
+    For i = 1 To lngCount
+        Set itemObj = dataArr(i)
+        If TypeName(itemObj) = "Dictionary" Then
+            With m_arrStations(i - 1)
+                If itemObj.Exists("station_no") Then .station_no = CStr(itemObj("station_no")) Else .station_no = ""
+                If itemObj.Exists("station_name") Then .station_name = CStr(itemObj("station_name")) Else .station_name = ""
+                If itemObj.Exists("arrive_time") Then .arrive_time = CStr(itemObj("arrive_time")) Else .arrive_time = ""
+                If itemObj.Exists("start_time") Then .start_time = CStr(itemObj("start_time")) Else .start_time = ""
+                .stopover_time = ""
+                If itemObj.Exists("arrive_day_str") Then .arrive_day_str = CStr(itemObj("arrive_day_str")) Else .arrive_day_str = ""
+                If itemObj.Exists("running_time") Then .running_time = CStr(itemObj("running_time")) Else .running_time = ""
+            End With
+        End If
     Next i
+    Exit Sub
+ErrHandler:
+    StatusBar.Panels(1).Text = "Õ¾µã½âÎöÊ§°Ü: " & Err.Description
+    m_lngStationCount = 0
 End Sub
 
 Private Sub ShowResults(ByVal strTrainCode As String)
     Dim i As Long
-    Dim itm As ListItem
+    Dim item As ListItem
     Dim strLishi As String
     lvResult.ListItems.Clear
     For i = 0 To m_lngStationCount - 1
-        Set itm = lvResult.ListItems.Add(, , m_arrStations(i).station_no)
-        itm.SubItems(1) = m_arrStations(i).station_name
-        itm.SubItems(2) = strTrainCode
-        itm.SubItems(3) = m_arrStations(i).start_time
-        itm.SubItems(4) = m_arrStations(i).arrive_time
+        Set item = lvResult.ListItems.Add(, , m_arrStations(i).station_no)
+        item.SubItems(1) = m_arrStations(i).station_name
+        item.SubItems(2) = strTrainCode
+        item.SubItems(3) = m_arrStations(i).start_time
+        item.SubItems(4) = m_arrStations(i).arrive_time
         If i = 0 Then
             strLishi = "----"
         ElseIf Len(Trim(m_arrStations(i).running_time)) > 0 Then
@@ -534,8 +544,8 @@ Private Sub ShowResults(ByVal strTrainCode As String)
         Else
             strLishi = "----"
         End If
-        itm.SubItems(5) = strLishi
-        itm.SubItems(6) = m_arrStations(i).arrive_day_str
+        item.SubItems(5) = strLishi
+        item.SubItems(6) = m_arrStations(i).arrive_day_str
     Next i
 End Sub
 

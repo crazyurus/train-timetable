@@ -5,6 +5,7 @@ Form=FrmMain.frm
 Object={86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0; mscomct2.ocx
 Module=Utilities; Utilities.bas
 Class=AsyncRequest; AsyncRequest.cls
+Class=JSON; JSON.cls
 ResFile32="style.res"
 IconForm="FrmMain"
 Startup="FrmMain"
@@ -38,3 +39,4 @@ Unattended=0
 Retained=0
 ThreadPerObject=0
 MaxNumberOfThreads=1
+
