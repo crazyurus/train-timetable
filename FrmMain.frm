@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
-Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomct2.ocx"
+Object = "{379157C5-E9BD-43F1-9F83-B037496BED42}#1.2#0"; "VBCCR18.OCX"
 Begin VB.Form FrmMain 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "列车时刻表"
@@ -23,11 +23,23 @@ Begin VB.Form FrmMain
    ScaleMode       =   0  'User
    ScaleWidth      =   9030
    StartUpPosition =   2  '屏幕中心
+   Begin VBCCR18.DTPicker dtpDate 
+      Height          =   375
+      Left            =   720
+      TabIndex        =   7
+      Top             =   240
+      Width           =   2775
+      _ExtentX        =   4895
+      _ExtentY        =   661
+      Value           =   32874
+      CustomFormat    =   "yyyy-MM-dd"
+      AllowUserInput  =   -1  'True
+   End
    Begin MSComctlLib.StatusBar StatusBar 
       Align           =   2  'Align Bottom
       Height          =   375
       Left            =   0
-      TabIndex        =   7
+      TabIndex        =   6
       Top             =   5055
       Width           =   9030
       _ExtentX        =   15928
@@ -53,20 +65,20 @@ Begin VB.Form FrmMain
             Style           =   6
             Object.Width           =   2734
             MinWidth        =   2734
-            TextSave        =   "2026/8/2"
+            TextSave        =   "2026/8/3"
          EndProperty
          BeginProperty Panel4 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
             Style           =   5
             Object.Width           =   1147
             MinWidth        =   1147
-            TextSave        =   "23:33"
+            TextSave        =   "1:56"
          EndProperty
       EndProperty
    End
    Begin VB.TextBox txtTrainNo 
-      Height          =   375
+      Height          =   377
       Left            =   4560
-      TabIndex        =   2
+      TabIndex        =   1
       Top             =   240
       Width           =   2775
    End
@@ -83,14 +95,14 @@ Begin VB.Form FrmMain
       Default         =   -1  'True
       Height          =   375
       Left            =   7680
-      TabIndex        =   3
+      TabIndex        =   2
       Top             =   240
       Width           =   1095
    End
    Begin MSComctlLib.ListView lvResult 
       Height          =   4215
       Left            =   240
-      TabIndex        =   4
+      TabIndex        =   3
       Top             =   720
       Width           =   8535
       _ExtentX        =   15055
@@ -144,28 +156,6 @@ Begin VB.Form FrmMain
          Object.Width           =   1763
       EndProperty
    End
-   Begin MSComCtl2.DTPicker dtpDate 
-      Height          =   375
-      Left            =   840
-      TabIndex        =   1
-      Top             =   240
-      Width           =   2775
-      _ExtentX        =   4895
-      _ExtentY        =   661
-      _Version        =   393216
-      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
-         Name            =   "微软雅黑"
-         Size            =   9
-         Charset         =   134
-         Weight          =   400
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      CustomFormat    =   "yyyy-MM-dd"
-      Format          =   150732801
-      CurrentDate     =   36494
-   End
    Begin VB.Timer tmrDebounce 
       Interval        =   300
       Left            =   7440
@@ -176,7 +166,7 @@ Begin VB.Form FrmMain
       Caption         =   "车次："
       Height          =   255
       Left            =   3960
-      TabIndex        =   5
+      TabIndex        =   4
       Top             =   300
       Width           =   540
    End
@@ -185,7 +175,7 @@ Begin VB.Form FrmMain
       Caption         =   "日期："
       Height          =   255
       Left            =   240
-      TabIndex        =   6
+      TabIndex        =   5
       Top             =   300
       Width           =   540
    End
@@ -229,7 +219,6 @@ Private m_strPQ_TrainCode As String
 Private m_strPQ_TrainNoFull As String
 Private m_strPQ_Date As String
 Private m_strPQ_DateDash As String
-
 Private Sub Form_Load()
     dtpDate.value = Date
     m_lngSearchCount = 0
