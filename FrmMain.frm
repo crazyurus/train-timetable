@@ -1,5 +1,4 @@
 VERSION 5.00
-Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Object = "{379157C5-E9BD-43F1-9F83-B037496BED42}#1.2#0"; "VBCCR18.OCX"
 Begin VB.Form FrmMain 
    BorderStyle     =   1  'Fixed Single
@@ -23,6 +22,34 @@ Begin VB.Form FrmMain
    ScaleMode       =   0  'User
    ScaleWidth      =   9030
    StartUpPosition =   2  '屏幕中心
+   Begin VBCCR18.ListView lvResult 
+      Height          =   4215
+      Left            =   240
+      TabIndex        =   2
+      Top             =   720
+      Width           =   8535
+      _ExtentX        =   15055
+      _ExtentY        =   7435
+      View            =   3
+      FullRowSelect   =   -1  'True
+      GridLines       =   -1  'True
+      LabelEdit       =   2
+      LabelWrap       =   0   'False
+      HighlightColumnHeaders=   -1  'True
+      TrackSizeColumnHeaders=   0   'False
+      AutoSelectFirstItem=   0   'False
+   End
+   Begin VBCCR18.CommandButtonW cmdQuery 
+      Default         =   -1  'True
+      Height          =   375
+      Left            =   7680
+      TabIndex        =   6
+      Top             =   241
+      Width           =   1095
+      _ExtentX        =   1931
+      _ExtentY        =   661
+      Caption         =   "查询"
+   End
    Begin VBCCR18.StatusBar StatusBar 
       Align           =   2  'Align Bottom
       Height          =   375
@@ -36,7 +63,7 @@ Begin VB.Form FrmMain
    Begin VBCCR18.DTPicker dtpDate 
       Height          =   375
       Left            =   720
-      TabIndex        =   6
+      TabIndex        =   5
       Top             =   240
       Width           =   2775
       _ExtentX        =   4895
@@ -60,75 +87,9 @@ Begin VB.Form FrmMain
       Visible         =   0   'False
       Width           =   2775
    End
-   Begin VB.CommandButton cmdQuery 
-      Caption         =   "查询"
-      Default         =   -1  'True
-      Height          =   375
-      Left            =   7680
-      TabIndex        =   2
-      Top             =   240
-      Width           =   1095
-   End
-   Begin MSComctlLib.ListView lvResult 
-      Height          =   4215
-      Left            =   240
-      TabIndex        =   3
-      Top             =   720
-      Width           =   8535
-      _ExtentX        =   15055
-      _ExtentY        =   7435
-      View            =   3
-      LabelWrap       =   -1  'True
-      HideSelection   =   -1  'True
-      FullRowSelect   =   -1  'True
-      GridLines       =   -1  'True
-      _Version        =   393217
-      ForeColor       =   -2147483640
-      BackColor       =   -2147483643
-      BorderStyle     =   1
-      Appearance      =   1
-      BeginProperty Font {0BE35203-8F91-11CE-9DE3-00AA004BB851} 
-         Name            =   "微软雅黑"
-         Size            =   9
-         Charset         =   134
-         Weight          =   400
-         Underline       =   0   'False
-         Italic          =   0   'False
-         Strikethrough   =   0   'False
-      EndProperty
-      NumItems        =   7
-      BeginProperty ColumnHeader(1) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
-         Text            =   "站序"
-         Object.Width           =   1058
-      EndProperty
-      BeginProperty ColumnHeader(2) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
-         Text            =   "车站"
-         Object.Width           =   2645
-      EndProperty
-      BeginProperty ColumnHeader(3) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
-         Text            =   "车次"
-         Object.Width           =   2116
-      EndProperty
-      BeginProperty ColumnHeader(4) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
-         Text            =   "出发时间"
-         Object.Width           =   2116
-      EndProperty
-      BeginProperty ColumnHeader(5) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
-         Text            =   "到达时间"
-         Object.Width           =   2116
-      EndProperty
-      BeginProperty ColumnHeader(6) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
-         Text            =   "历时"
-         Object.Width           =   2645
-      EndProperty
-      BeginProperty ColumnHeader(7) {BDD1F052-858B-11D1-B16A-00C0F0283628} 
-         Text            =   "备注"
-         Object.Width           =   1763
-      EndProperty
-   End
    Begin VB.Timer tmrDebounce 
       Interval        =   300
-      Left            =   7440
+      Left            =   7320
       Top             =   120
    End
    Begin VB.Label Label3 
@@ -136,7 +97,7 @@ Begin VB.Form FrmMain
       Caption         =   "车次："
       Height          =   255
       Left            =   3960
-      TabIndex        =   4
+      TabIndex        =   3
       Top             =   300
       Width           =   540
    End
@@ -145,7 +106,7 @@ Begin VB.Form FrmMain
       Caption         =   "日期："
       Height          =   255
       Left            =   240
-      TabIndex        =   5
+      TabIndex        =   4
       Top             =   300
       Width           =   540
    End
@@ -193,6 +154,16 @@ Private Sub Form_Load()
     dtpDate.value = Date
     m_lngSearchCount = 0
     m_lngStationCount = 0
+
+    With lvResult.ColumnHeaders
+        .Add , , "站序", 600
+        .Add , , "车站", 1800
+        .Add , , "车次", 800
+        .Add , , "出发时间", 1000
+        .Add , , "到达时间", 1000
+        .Add , , "历时", 800
+        .Add , , "备注", 1400
+    End With
 End Sub
 
 Private Sub txtTrainNo_Change()
@@ -487,7 +458,7 @@ End Sub
 
 Private Sub ShowResults(ByVal strTrainCode As String)
     Dim i As Long
-    Dim item As ListItem
+    Dim item As Object
     Dim strLishi As String
     lvResult.ListItems.Clear
     For i = 0 To m_lngStationCount - 1
