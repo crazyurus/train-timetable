@@ -26,8 +26,7 @@ Public Sub GetRequest(ByVal url As String, ByRef callbackTarget As Object, ByVal
     m_aborted = False
     
     Set m_xmlhttp = CreateObject("MSXML2.ServerXMLHTTP.6.0")
-    On Error Resume Next
-    m_xmlhttp.setOption 2, 13056  'ignore all SSL errors for kyfw.12306.cn
+
     On Error GoTo ErrHandler
     m_xmlhttp.Open "GET", url, True
     m_xmlhttp.onreadystatechange = Me

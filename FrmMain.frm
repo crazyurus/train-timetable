@@ -59,7 +59,7 @@ Begin VB.Form FrmMain
             Style           =   5
             Object.Width           =   1147
             MinWidth        =   1147
-            TextSave        =   "2:16"
+            TextSave        =   "22:05"
          EndProperty
       EndProperty
    End
@@ -72,9 +72,7 @@ Begin VB.Form FrmMain
    End
    Begin VB.ListBox lstSuggest 
       Height          =   1590
-      ItemData        =   "FrmMain.frx":0000
       Left            =   4560
-      List            =   "FrmMain.frx":0002
       TabIndex        =   0
       Top             =   600
       Visible         =   0   'False
@@ -165,7 +163,7 @@ Begin VB.Form FrmMain
          Strikethrough   =   0   'False
       EndProperty
       CustomFormat    =   "yyyy-MM-dd"
-      Format          =   150405121
+      Format          =   149094401
       CurrentDate     =   36494
    End
    Begin VB.Timer tmrDebounce 
