@@ -1,7 +1,6 @@
 Attribute VB_Name = "Utilities"
 Option Explicit
 
-
 Public Function GetJsonArray(ByVal strJson As String) As String
     Dim lngBracket As Long
     Dim i As Long
@@ -26,27 +25,6 @@ Public Function GetJsonArray(ByVal strJson As String) As String
         End If
     Next i
     GetJsonArray = strJson
-End Function
-
-Public Function HttpGet(ByVal strUrl As String) As String
-    Dim objHttp As Object
-    Dim strResult As String
-    On Error GoTo ErrorHandler
-    Set objHttp = CreateObject("MSXML2.ServerXMLHTTP.6.0")
-    On Error Resume Next
-    objHttp.setOption 2, 13056
-    On Error GoTo ErrorHandler
-    With objHttp
-        .Open "GET", strUrl, False
-        .Send
-        .WaitForResponse 10000
-        strResult = .responseText
-    End With
-    HttpGet = strResult
-    Set objHttp = Nothing
-    Exit Function
-ErrorHandler:
-    Err.Raise vbObjectError + 1001, "HttpGet", "HTTP«Î«Û ß∞‹: " & Err.Description
 End Function
 
 Public Function EncodeURL(ByVal strText As String) As String

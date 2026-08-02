@@ -3,7 +3,7 @@ Object = "{831FDD16-0C5C-11D2-A9FC-0000F8754DA1}#2.2#0"; "MSCOMCTL.OCX"
 Object = "{86CF1D34-0C5F-11D2-A9FC-0000F8754DA1}#2.0#0"; "mscomct2.ocx"
 Begin VB.Form FrmMain 
    BorderStyle     =   1  'Fixed Single
-   Caption         =   "列车时刻表查询"
+   Caption         =   "列车时刻表"
    ClientHeight    =   5430
    ClientLeft      =   45
    ClientTop       =   390
@@ -59,7 +59,7 @@ Begin VB.Form FrmMain
             Style           =   5
             Object.Width           =   1147
             MinWidth        =   1147
-            TextSave        =   "22:05"
+            TextSave        =   "22:31"
          EndProperty
       EndProperty
    End
@@ -163,7 +163,7 @@ Begin VB.Form FrmMain
          Strikethrough   =   0   'False
       EndProperty
       CustomFormat    =   "yyyy-MM-dd"
-      Format          =   149094401
+      Format          =   149553153
       CurrentDate     =   36494
    End
    Begin VB.Timer tmrDebounce 
@@ -224,6 +224,11 @@ Private m_lngStationCount As Long
 Private m_blnSkipChange As Boolean
 Private m_asyncSuggest As AsyncRequest
 Private m_strPendingKeyword As String
+Private m_asyncSearch As AsyncRequest
+Private m_strPQ_TrainCode As String
+Private m_strPQ_TrainNoFull As String
+Private m_strPQ_Date As String
+Private m_strPQ_DateDash As String
 
 Private Sub Form_Load()
     dtpDate.Value = Date
@@ -275,8 +280,7 @@ Private Sub SearchTrainSuggest()
     m_strPendingKeyword = strKeyword
     strDate = Format(dtpDate.Value, "yyyyMMdd")
     StatusBar.Panels(1).Text = "正在搜索车次..."
-    strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & _
-             EncodeURL(strKeyword) & "&date=" & strDate
+    strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & EncodeURL(strKeyword) & "&date=" & strDate
     Set m_asyncSuggest = New AsyncRequest
     m_asyncSuggest.GetRequest strUrl, Me, "OnSuggestComplete"
     Exit Sub
@@ -364,10 +368,6 @@ Private Sub cmdQuery_Click()
     Dim strDate As String
     Dim strDateDash As String
     Dim strUrl As String
-    Dim strResponse As String
-    Dim i As Long
-    Dim blnFound As Boolean
-    Dim strTrainNoFull As String
     On Error GoTo ErrorHandler
     strTrainCode = Trim(txtTrainNo.Text)
     If Len(strTrainCode) = 0 Then
@@ -378,45 +378,97 @@ Private Sub cmdQuery_Click()
     If InStr(strTrainCode, " ") > 0 Then
         strTrainCode = Left(strTrainCode, InStr(strTrainCode, " ") - 1)
     End If
-    StatusBar.Panels(1).Text = "正在查询列车时刻表..."
+    If Not m_asyncSearch Is Nothing Then
+        m_asyncSearch.Abort
+        Set m_asyncSearch = Nothing
+    End If
     cmdQuery.Enabled = False
     lstSuggest.Visible = False
-    strDate = Format(dtpDate.Value, "yyyyMMdd")
-    strDateDash = Format(dtpDate.Value, "yyyy-MM-dd")
+    m_strPQ_TrainCode = strTrainCode
+    m_strPQ_TrainNoFull = ""
+    m_strPQ_Date = Format(dtpDate.Value, "yyyyMMdd")
+    m_strPQ_DateDash = Format(dtpDate.Value, "yyyy-MM-dd")
     If m_lngSearchCount = 0 Or _
        (m_lngSearchCount > 0 And _
         StrComp(m_arrTrainSearch(0).station_train_code, strTrainCode, vbTextCompare) <> 0) Then
-        strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & _
-                 EncodeURL(strTrainCode) & "&date=" & strDate
-        strResponse = HttpGet(strUrl)
-        ParseTrainSearchResult strResponse
+        StatusBar.Panels(1).Text = "正在查询车次编号……"
+        strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & EncodeURL(strTrainCode) & "&date=" & m_strPQ_Date
+        Set m_asyncSearch = New AsyncRequest
+        m_asyncSearch.GetRequest strUrl, Me, "OnPhase1Complete"
+    Else
+        Call DoPhase1Local
     End If
+    Exit Sub
+ErrorHandler:
+    MsgBox "查询出错: " & Err.Description, vbCritical
+    StatusBar.Panels(1).Text = "查询出错"
+    cmdQuery.Enabled = True
+End Sub
+
+Private Sub DoPhase1Local()
+    Dim i As Long
+    Dim blnFound As Boolean
     blnFound = False
-    strTrainNoFull = ""
     For i = 0 To m_lngSearchCount - 1
-        If StrComp(m_arrTrainSearch(i).station_train_code, strTrainCode, vbTextCompare) = 0 Then
-            strTrainNoFull = m_arrTrainSearch(i).train_no
+        If StrComp(m_arrTrainSearch(i).station_train_code, m_strPQ_TrainCode, vbTextCompare) = 0 Then
+            m_strPQ_TrainNoFull = m_arrTrainSearch(i).train_no
             blnFound = True
             Exit For
         End If
     Next i
     If Not blnFound Then
-        MsgBox "未找到车次 " & strTrainCode, vbExclamation
+        MsgBox "未找到车次 " & m_strPQ_TrainCode, vbExclamation
         StatusBar.Panels(1).Text = "未找到车次"
         cmdQuery.Enabled = True
         Exit Sub
     End If
-    strUrl = "https://kyfw.12306.cn/otn/queryTrainInfo/query?" & _
-             "leftTicketDTO.train_no=" & EncodeURL(strTrainNoFull) & _
-             "&leftTicketDTO.train_date=" & strDateDash & _
-             "&rand_code="
-    strResponse = HttpGet(strUrl)
-    ParseStationInfo strResponse, strTrainCode
-    ShowResults strTrainCode
+    Call StartPhase2
+End Sub
+
+Public Sub OnPhase1Complete(ByVal status As Long, ByVal responseText As String)
+    On Error GoTo ErrH
+    If status <> 200 Then
+        MsgBox "HTTP请求失败，状态码=" & status, vbCritical
+        StatusBar.Panels(1).Text = "查询出错"
+        cmdQuery.Enabled = True
+        Exit Sub
+    End If
+    ParseTrainSearchResult responseText
+    Call DoPhase1Local
+    Exit Sub
+ErrH:
+    MsgBox "查询出错: " & Err.Description, vbCritical
+    StatusBar.Panels(1).Text = "查询出错"
+    cmdQuery.Enabled = True
+End Sub
+
+Private Sub StartPhase2()
+    Dim strUrl As String
+    If Not m_asyncSearch Is Nothing Then
+        m_asyncSearch.Abort
+        Set m_asyncSearch = Nothing
+    End If
+    StatusBar.Panels(1).Text = "正在查询停靠站信息……"
+    strUrl = "https://kyfw.12306.cn/otn/queryTrainInfo/query?" & "leftTicketDTO.train_no=" & EncodeURL(m_strPQ_TrainNoFull) & "&leftTicketDTO.train_date=" & m_strPQ_DateDash
+    Set m_asyncSearch = New AsyncRequest
+    m_asyncSearch.GetRequest strUrl, Me, "OnPhase2Complete"
+End Sub
+
+Public Sub OnPhase2Complete(ByVal status As Long, ByVal responseText As String)
+    On Error GoTo ErrH
+    If status <> 200 Then
+        MsgBox "HTTP请求失败，状态码=" & status, vbCritical
+        StatusBar.Panels(1).Text = "查询出错"
+        cmdQuery.Enabled = True
+        Exit Sub
+    End If
+    ParseStationInfo responseText, m_strPQ_TrainCode
+    ShowResults m_strPQ_TrainCode
     StatusBar.Panels(1).Text = "查询完成，全程共有 " & m_lngStationCount & " 个停靠站"
     cmdQuery.Enabled = True
+    Set m_asyncSearch = Nothing
     Exit Sub
-ErrorHandler:
+ErrH:
     MsgBox "查询出错: " & Err.Description, vbCritical
     StatusBar.Panels(1).Text = "查询出错"
     cmdQuery.Enabled = True
@@ -489,6 +541,10 @@ End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
     On Error Resume Next
+    If Not m_asyncSearch Is Nothing Then
+        m_asyncSearch.Abort
+        Set m_asyncSearch = Nothing
+    End If
     If Not m_asyncSuggest Is Nothing Then
         m_asyncSuggest.Abort
         Set m_asyncSuggest = Nothing
