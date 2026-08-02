@@ -22,10 +22,31 @@ Begin VB.Form FrmMain
    ScaleMode       =   0  'User
    ScaleWidth      =   9030
    StartUpPosition =   2  '屏幕中心
+   Begin VBCCR18.ListBoxW lstSuggest 
+      Height          =   1590
+      Left            =   4560
+      TabIndex        =   6
+      Top             =   600
+      Visible         =   0   'False
+      Width           =   2775
+      _ExtentX        =   4895
+      _ExtentY        =   2805
+      BackColor       =   -2147483643
+      ForeColor       =   -2147483640
+   End
+   Begin VBCCR18.TextBoxW txtTrainNo 
+      Height          =   375
+      Left            =   4560
+      TabIndex        =   5
+      Top             =   240
+      Width           =   2775
+      _ExtentX        =   4895
+      _ExtentY        =   661
+   End
    Begin VBCCR18.ListView lvResult 
       Height          =   4215
       Left            =   240
-      TabIndex        =   2
+      TabIndex        =   0
       Top             =   720
       Width           =   8535
       _ExtentX        =   15055
@@ -43,7 +64,7 @@ Begin VB.Form FrmMain
       Default         =   -1  'True
       Height          =   375
       Left            =   7680
-      TabIndex        =   6
+      TabIndex        =   4
       Top             =   241
       Width           =   1095
       _ExtentX        =   1931
@@ -63,7 +84,7 @@ Begin VB.Form FrmMain
    Begin VBCCR18.DTPicker dtpDate 
       Height          =   375
       Left            =   720
-      TabIndex        =   5
+      TabIndex        =   3
       Top             =   240
       Width           =   2775
       _ExtentX        =   4895
@@ -71,21 +92,6 @@ Begin VB.Form FrmMain
       Value           =   32874
       CustomFormat    =   "FrmMain.frx":04F0
       AllowUserInput  =   -1  'True
-   End
-   Begin VB.TextBox txtTrainNo 
-      Height          =   377
-      Left            =   4560
-      TabIndex        =   1
-      Top             =   240
-      Width           =   2775
-   End
-   Begin VB.ListBox lstSuggest 
-      Height          =   1590
-      Left            =   4560
-      TabIndex        =   0
-      Top             =   600
-      Visible         =   0   'False
-      Width           =   2775
    End
    Begin VB.Timer tmrDebounce 
       Interval        =   300
@@ -97,7 +103,7 @@ Begin VB.Form FrmMain
       Caption         =   "车次："
       Height          =   255
       Left            =   3960
-      TabIndex        =   3
+      TabIndex        =   1
       Top             =   300
       Width           =   540
    End
@@ -106,7 +112,7 @@ Begin VB.Form FrmMain
       Caption         =   "日期："
       Height          =   255
       Left            =   240
-      TabIndex        =   4
+      TabIndex        =   2
       Top             =   300
       Width           =   540
    End
