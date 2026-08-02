@@ -23,57 +23,27 @@ Begin VB.Form FrmMain
    ScaleMode       =   0  'User
    ScaleWidth      =   9030
    StartUpPosition =   2  '屏幕中心
+   Begin VBCCR18.StatusBar StatusBar 
+      Align           =   2  'Align Bottom
+      Height          =   375
+      Left            =   0
+      Top             =   5055
+      Width           =   9030
+      _ExtentX        =   15928
+      _ExtentY        =   661
+      InitPanels      =   "FrmMain.frx":0000
+   End
    Begin VBCCR18.DTPicker dtpDate 
       Height          =   375
       Left            =   720
-      TabIndex        =   7
+      TabIndex        =   6
       Top             =   240
       Width           =   2775
       _ExtentX        =   4895
       _ExtentY        =   661
       Value           =   32874
-      CustomFormat    =   "yyyy-MM-dd"
+      CustomFormat    =   "FrmMain.frx":04F0
       AllowUserInput  =   -1  'True
-   End
-   Begin MSComctlLib.StatusBar StatusBar 
-      Align           =   2  'Align Bottom
-      Height          =   375
-      Left            =   0
-      TabIndex        =   6
-      Top             =   5055
-      Width           =   9030
-      _ExtentX        =   15928
-      _ExtentY        =   661
-      _Version        =   393216
-      BeginProperty Panels {8E3867A5-8586-11D1-B16A-00C0F0283628} 
-         NumPanels       =   4
-         BeginProperty Panel1 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
-            AutoSize        =   1
-            Object.Width           =   9737
-            Text            =   "制造本程序：Cr4zy Uru5"
-            TextSave        =   "制造本程序：Cr4zy Uru5"
-            Object.ToolTipText     =   "Cr4zy Uru5"
-         EndProperty
-         BeginProperty Panel2 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
-            Object.Width           =   2205
-            MinWidth        =   2205
-            Text            =   "No.2026001"
-            TextSave        =   "No.2026001"
-            Object.ToolTipText     =   "2026年第一个程序"
-         EndProperty
-         BeginProperty Panel3 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
-            Style           =   6
-            Object.Width           =   2734
-            MinWidth        =   2734
-            TextSave        =   "2026/8/3"
-         EndProperty
-         BeginProperty Panel4 {8E3867AB-8586-11D1-B16A-00C0F0283628} 
-            Style           =   5
-            Object.Width           =   1147
-            MinWidth        =   1147
-            TextSave        =   "1:56"
-         EndProperty
-      EndProperty
    End
    Begin VB.TextBox txtTrainNo 
       Height          =   377
