@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{379157C5-E9BD-43F1-9F83-B037496BED42}#1.2#0"; "VBCCR18.OCX"
-Begin VB.Form FrmTrain 
+Begin VB.Form frmTrain 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "根据车次查询列车时刻表"
    ClientHeight    =   5430
@@ -43,7 +43,7 @@ Begin VB.Form FrmTrain
       _ExtentX        =   4895
       _ExtentY        =   661
    End
-   Begin VBCCR18.ListView lvResult 
+   Begin VBCCR18.ListView lsvResult 
       Height          =   4215
       Left            =   240
       TabIndex        =   0
@@ -71,7 +71,7 @@ Begin VB.Form FrmTrain
       _ExtentY        =   661
       Caption         =   "查询"
    End
-   Begin VBCCR18.StatusBar StatusBar 
+   Begin VBCCR18.StatusBar statusBar 
       Align           =   2  'Align Bottom
       Height          =   375
       Left            =   0
@@ -81,9 +81,9 @@ Begin VB.Form FrmTrain
       _ExtentY        =   661
       InitPanels      =   "FrmTrain.frx":0000
    End
-   Begin VBCCR18.DTPicker dtpDate 
+   Begin VBCCR18.DTPicker datePicker 
       Height          =   375
-      Left            =   720
+      Left            =   840
       TabIndex        =   3
       Top             =   240
       Width           =   2775
@@ -117,7 +117,7 @@ Begin VB.Form FrmTrain
       Width           =   540
    End
 End
-Attribute VB_Name = "FrmTrain"
+Attribute VB_Name = "frmTrain"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
@@ -156,12 +156,13 @@ Private m_strPQ_TrainCode As String
 Private m_strPQ_TrainNoFull As String
 Private m_strPQ_Date As String
 Private m_strPQ_DateDash As String
+
 Private Sub Form_Load()
-    dtpDate.value = Date
+    datePicker.value = Date
     m_lngSearchCount = 0
     m_lngStationCount = 0
 
-    With lvResult.ColumnHeaders
+    With lsvResult.ColumnHeaders
         .Add , , "站序", 600
         .Add , , "车站", 1800
         .Add , , "车次", 800
@@ -214,7 +215,7 @@ Private Sub SearchTrainSuggest()
     Set m_asyncSuggest = Nothing
     On Error GoTo ErrorHandler
     m_strPendingKeyword = strKeyword
-    strDate = Format(dtpDate.value, "yyyyMMdd")
+    strDate = Format(datePicker.value, "yyyyMMdd")
     StatusBar.Panels(1).Text = "正在搜索车次..."
     strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & EncodeURL(strKeyword) & "&date=" & strDate
     Set m_asyncSuggest = New AsyncRequest
@@ -329,8 +330,8 @@ Private Sub cmdQuery_Click()
     lstSuggest.Visible = False
     m_strPQ_TrainCode = strTrainCode
     m_strPQ_TrainNoFull = ""
-    m_strPQ_Date = Format(dtpDate.value, "yyyyMMdd")
-    m_strPQ_DateDash = Format(dtpDate.value, "yyyy-MM-dd")
+    m_strPQ_Date = Format(datePicker.value, "yyyyMMdd")
+    m_strPQ_DateDash = Format(datePicker.value, "yyyy-MM-dd")
     If m_lngSearchCount = 0 Or _
        (m_lngSearchCount > 0 And _
         StrComp(m_arrTrainSearch(0).station_train_code, strTrainCode, vbTextCompare) <> 0) Then
@@ -466,9 +467,9 @@ Private Sub ShowResults(ByVal strTrainCode As String)
     Dim i As Long
     Dim item As Object
     Dim strLishi As String
-    lvResult.ListItems.Clear
+    lsvResult.ListItems.Clear
     For i = 0 To m_lngStationCount - 1
-        Set item = lvResult.ListItems.Add(, , m_arrStations(i).station_no)
+        Set item = lsvResult.ListItems.Add(, , m_arrStations(i).station_no)
         item.SubItems(1) = m_arrStations(i).station_name
         item.SubItems(2) = strTrainCode
         item.SubItems(3) = m_arrStations(i).start_time
