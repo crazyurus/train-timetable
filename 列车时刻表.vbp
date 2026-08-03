@@ -1,13 +1,13 @@
 Type=Exe
 Reference=*\G{00020430-0000-0000-C000-000000000046}#2.0#0#..\..\..\..\Windows\SysWOW64\stdole2.tlb#OLE Automation
-Form=FrmMain.frm
+Form=FrmTrain.frm
 Module=Utilities; Utilities.bas
 Class=AsyncRequest; AsyncRequest.cls
 Class=JSON; JSON.cls
 Object={379157C5-E9BD-43F1-9F83-B037496BED42}#1.2#0; VBCCR18.OCX
-ResFile32="style.res"
-IconForm="FrmMain"
-Startup="FrmMain"
+Form=FrmStart.frm
+IconForm="FrmTrain"
+Startup="FrmStart"
 HelpFile=""
 Title="列车时刻表"
 ExeName32="列车时刻表.exe"

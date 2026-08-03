@@ -1,8 +1,8 @@
 VERSION 5.00
 Object = "{379157C5-E9BD-43F1-9F83-B037496BED42}#1.2#0"; "VBCCR18.OCX"
-Begin VB.Form FrmMain 
+Begin VB.Form FrmTrain 
    BorderStyle     =   1  'Fixed Single
-   Caption         =   "列车时刻表"
+   Caption         =   "根据车次查询列车时刻表"
    ClientHeight    =   5430
    ClientLeft      =   45
    ClientTop       =   390
@@ -79,7 +79,7 @@ Begin VB.Form FrmMain
       Width           =   9030
       _ExtentX        =   15928
       _ExtentY        =   661
-      InitPanels      =   "FrmMain.frx":0000
+      InitPanels      =   "FrmTrain.frx":0000
    End
    Begin VBCCR18.DTPicker dtpDate 
       Height          =   375
@@ -90,7 +90,7 @@ Begin VB.Form FrmMain
       _ExtentX        =   4895
       _ExtentY        =   661
       Value           =   32874
-      CustomFormat    =   "FrmMain.frx":04F0
+      CustomFormat    =   "FrmTrain.frx":04F0
       AllowUserInput  =   -1  'True
    End
    Begin VB.Timer tmrDebounce 
@@ -117,7 +117,7 @@ Begin VB.Form FrmMain
       Width           =   540
    End
 End
-Attribute VB_Name = "FrmMain"
+Attribute VB_Name = "FrmTrain"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
