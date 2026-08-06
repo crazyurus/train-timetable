@@ -117,7 +117,12 @@ Private Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" ( 
 ) As Long
 
 Private Sub cmdExit_Click()
-    End
+    Unload Me
+End Sub
+
+Private Sub cmdStation_Click()
+    frmStation.Show
+    Unload Me
 End Sub
 
 Private Sub cmdTrain_Click()
