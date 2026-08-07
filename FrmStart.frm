@@ -23,6 +23,8 @@ Begin VB.Form frmStart
    ScaleHeight     =   3735
    ScaleWidth      =   6165
    StartUpPosition =   2  '屏幕中心
+   WhatsThisButton =   -1  'True
+   WhatsThisHelp   =   -1  'True
    Begin VB.PictureBox Picture1 
       BorderStyle     =   0  'None
       Height          =   700
@@ -128,6 +130,13 @@ End Sub
 Private Sub cmdTrain_Click()
     frmTrain.Show
     Unload Me
+End Sub
+
+Private Sub Form_Load()
+    If App.PrevInstance Then
+        MsgBox "当前程序已经在运行", vbCritical
+        End
+    End If
 End Sub
 
 Private Sub lnkAbout_Click()
