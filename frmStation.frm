@@ -137,6 +137,10 @@ Private Type TicketResult
     swz_price As String
     zy_price As String
     ze_price As String
+    gr_price As String
+    rw_price As String
+    yw_price As String
+    yz_price As String
 End Type
 
 Private m_arrTickets() As TicketResult
@@ -150,14 +154,18 @@ Private Sub Form_Load()
     With lsvResult.ColumnHeaders
         .Add , , "车次", 900
         .Add , , "类型", 700
-        .Add , , "出发站", 1200
-        .Add , , "到达站", 1200
+        .Add , , "出发站", 1000
+        .Add , , "到达站", 1000
         .Add , , "出发时间", 1000
         .Add , , "到达时间", 1000
         .Add , , "历时", 800
-        .Add , , "商务座", 800
-        .Add , , "一等座", 800
-        .Add , , "二等座", 800
+        .Add , , "商务座", 750, LvwColumnHeaderAlignmentRight
+        .Add , , "一等座", 750, LvwColumnHeaderAlignmentRight
+        .Add , , "二等座", 750, LvwColumnHeaderAlignmentRight
+        .Add , , "高级软卧", 900, LvwColumnHeaderAlignmentRight
+        .Add , , "软卧", 750, LvwColumnHeaderAlignmentRight
+        .Add , , "硬卧", 750, LvwColumnHeaderAlignmentRight
+        .Add , , "硬座", 750, LvwColumnHeaderAlignmentRight
     End With
 End Sub
 
@@ -221,7 +229,7 @@ Public Sub OnQueryComplete(ByVal status As Long, ByVal responseText As String)
     
     ParseTicketResult responseText
     ShowResults
-    statusBar.Panels(1).Text = "查询完成，共找到 " & m_lngTicketCount & " 趟列车"
+    statusBar.Panels(1).Text = "查询完成，共计 " & m_lngTicketCount & " 个车次"
     cmdQuery.Enabled = True
     Set m_asyncQuery = Nothing
     Exit Sub
@@ -277,6 +285,10 @@ Private Sub ParseTicketResult(ByVal strJson As String)
                         If dto.Exists("swz_price") Then .swz_price = FormatPrice(CStr(dto("swz_price"))) Else .swz_price = ""
                         If dto.Exists("zy_price") Then .zy_price = FormatPrice(CStr(dto("zy_price"))) Else .zy_price = ""
                         If dto.Exists("ze_price") Then .ze_price = FormatPrice(CStr(dto("ze_price"))) Else .ze_price = ""
+                        If dto.Exists("gr_price") Then .gr_price = FormatPrice(CStr(dto("gr_price"))) Else .gr_price = ""
+                        If dto.Exists("rw_price") Then .rw_price = FormatPrice(CStr(dto("rw_price"))) Else .rw_price = ""
+                        If dto.Exists("yw_price") Then .yw_price = FormatPrice(CStr(dto("yw_price"))) Else .yw_price = ""
+                        If dto.Exists("yz_price") Then .yz_price = FormatPrice(CStr(dto("yz_price"))) Else .yz_price = ""
                     End With
                 End If
             End If
@@ -291,7 +303,7 @@ End Sub
 Private Function FormatPrice(ByVal priceStr As String) As String
     Dim d As Double
     On Error Resume Next
-    d = CDbl(priceStr) / 100
+    d = CDbl(priceStr) / 10
     If d > 0 Then
         FormatPrice = ChrW(165) & Format(d, "0.0")
     Else
@@ -315,6 +327,10 @@ Private Sub ShowResults()
         Item.SubItems(7) = m_arrTickets(i).swz_price
         Item.SubItems(8) = m_arrTickets(i).zy_price
         Item.SubItems(9) = m_arrTickets(i).ze_price
+        Item.SubItems(10) = m_arrTickets(i).gr_price
+        Item.SubItems(11) = m_arrTickets(i).rw_price
+        Item.SubItems(12) = m_arrTickets(i).yw_price
+        Item.SubItems(13) = m_arrTickets(i).yz_price
     Next i
 End Sub
 

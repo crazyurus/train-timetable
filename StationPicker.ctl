@@ -178,14 +178,9 @@ Private Sub ShowFilteredStations()
         m_arrSuggestCodes(i - 1) = entry("code")
     Next
     
-    lstSuggest.ListIndex = 0
     If results.Count > 5 Then lngShow = 5 Else lngShow = results.Count
     lstSuggest.Move 0, 360, UserControl.ScaleWidth, lngShow * 375 + 60
     lstSuggest.Visible = True
-    
-    On Error Resume Next
-    UserControl.Height = 375 + lstSuggest.Height + 60
-    On Error GoTo 0
 End Sub
 
 Private Sub HideSuggestions()
