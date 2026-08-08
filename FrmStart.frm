@@ -123,7 +123,7 @@ Private Sub cmdExit_Click()
 End Sub
 
 Private Sub cmdStation_Click()
-    frmStation.Show
+    frmTicket.Show
     Unload Me
 End Sub
 

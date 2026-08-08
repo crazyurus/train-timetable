@@ -1,6 +1,6 @@
 VERSION 5.00
 Object = "{379157C5-E9BD-43F1-9F83-B037496BED42}#1.2#0"; "VBCCR18.OCX"
-Begin VB.Form frmStation 
+Begin VB.Form frmTicket 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "根据始发站查询列车时刻表"
    ClientHeight    =   5535
@@ -47,7 +47,7 @@ Begin VB.Form frmStation
       Width           =   10230
       _ExtentX        =   18045
       _ExtentY        =   661
-      InitPanels      =   "frmStation.frx":0000
+      InitPanels      =   "frmTicket.frx":0000
    End
    Begin VBCCR18.CommandButtonW cmdQuery 
       Default         =   -1  'True
@@ -69,7 +69,7 @@ Begin VB.Form frmStation
       _ExtentX        =   3413
       _ExtentY        =   661
       Value           =   32874
-      CustomFormat    =   "frmStation.frx":04F0
+      CustomFormat    =   "frmTicket.frx":04F0
       AllowUserInput  =   -1  'True
    End
    Begin VBCCR18.ListView lsvResult 
@@ -117,7 +117,7 @@ Begin VB.Form frmStation
       Width           =   540
    End
 End
-Attribute VB_Name = "frmStation"
+Attribute VB_Name = "frmTicket"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True

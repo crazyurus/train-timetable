@@ -183,7 +183,10 @@ Private Sub cmdQuery_Click()
     
     If Len(m_strPQ_TrainNoFull) = 0 Then
         statusBar.Panels(1).Text = "正在查询车次编号……"
-        strUrl = "https://search.12306.cn/search/v1/train/search?keyword=" & EncodeURL(strTrainCode) & "&date=" & m_strPQ_Date
+        strUrl = "https://search.12306.cn/search/v1/train/search?" & _
+                 "keyword=" & EncodeURL(strTrainCode) & _
+                 "&date=" & m_strPQ_Date
+        
         Set m_asyncSearch = New AsyncRequest
         m_asyncSearch.GetRequest strUrl, Me, "OnPhase1Complete"
     Else
@@ -228,7 +231,7 @@ Private Sub StartPhase2()
         Set m_asyncSearch = Nothing
     End If
     statusBar.Panels(1).Text = "正在查询停靠站信息……"
-    strUrl = "https://kyfw.12306.cn/otn/queryTrainInfo/query?" & "leftTicketDTO.train_no=" & EncodeURL(m_strPQ_TrainNoFull) & "&leftTicketDTO.train_date=" & m_strPQ_DateDash
+    strUrl = "https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no=" & EncodeURL(m_strPQ_TrainNoFull) & "&leftTicketDTO.train_date=" & m_strPQ_DateDash
     Set m_asyncSearch = New AsyncRequest
     m_asyncSearch.GetRequest strUrl, Me, "OnPhase2Complete"
 End Sub
