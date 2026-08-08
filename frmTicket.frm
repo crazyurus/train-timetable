@@ -47,7 +47,7 @@ Begin VB.Form frmTicket
       Width           =   10230
       _ExtentX        =   18045
       _ExtentY        =   661
-      InitPanels      =   "frmTicket.frx":0000
+      InitPanels      =   "FrmTicket.frx":0000
    End
    Begin VBCCR18.CommandButtonW cmdQuery 
       Default         =   -1  'True
@@ -69,7 +69,7 @@ Begin VB.Form frmTicket
       _ExtentX        =   3413
       _ExtentY        =   661
       Value           =   32874
-      CustomFormat    =   "frmTicket.frx":04F0
+      CustomFormat    =   "FrmTicket.frx":04F0
       AllowUserInput  =   -1  'True
    End
    Begin VBCCR18.ListView lsvResult 
@@ -152,12 +152,12 @@ Private Sub Form_Load()
     m_lngTicketCount = 0
     
     With lsvResult.ColumnHeaders
-        .Add , , "车次", 900
-        .Add , , "类型", 700
-        .Add , , "出发站", 1000
-        .Add , , "到达站", 1000
-        .Add , , "出发时间", 1000
-        .Add , , "到达时间", 1000
+        .Add , , "车次", 800
+        .Add , , "类型", 600
+        .Add , , "出发站", 1100
+        .Add , , "到达站", 1100
+        .Add , , "出发时间", 900
+        .Add , , "到达时间", 900
         .Add , , "历时", 800
         .Add , , "商务座", 750, LvwColumnHeaderAlignmentRight
         .Add , , "一等座", 750, LvwColumnHeaderAlignmentRight

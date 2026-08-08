@@ -4,7 +4,7 @@ Begin VB.Form frmStart
    BackColor       =   &H80000005&
    BorderStyle     =   1  'Fixed Single
    Caption         =   "列车时刻表"
-   ClientHeight    =   3735
+   ClientHeight    =   4170
    ClientLeft      =   45
    ClientTop       =   390
    ClientWidth     =   6165
@@ -20,7 +20,7 @@ Begin VB.Form frmStart
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   3735
+   ScaleHeight     =   4170
    ScaleWidth      =   6165
    StartUpPosition =   2  '屏幕中心
    WhatsThisButton =   -1  'True
@@ -32,7 +32,7 @@ Begin VB.Form frmStart
       ScaleHeight     =   705
       ScaleWidth      =   6255
       TabIndex        =   3
-      Top             =   3030
+      Top             =   3480
       Width           =   6255
       Begin VBCCR18.CommandButtonW cmdExit 
          Cancel          =   -1  'True
@@ -69,16 +69,28 @@ Begin VB.Form frmStart
       Caption         =   "FrmStart.frx":0048
       Transparent     =   -1  'True
    End
-   Begin VBCCR18.CommandLink cmdStation 
+   Begin VBCCR18.CommandLink cmdTicket 
       Height          =   615
       Left            =   360
       TabIndex        =   2
-      Top             =   1920
+      Top             =   2520
       Width           =   5415
       _ExtentX        =   9551
       _ExtentY        =   1085
       MouseTrack      =   -1  'True
       Caption         =   "FrmStart.frx":0074
+      Transparent     =   -1  'True
+   End
+   Begin VBCCR18.CommandLink cmdStation 
+      Height          =   615
+      Left            =   360
+      TabIndex        =   6
+      Top             =   1800
+      Width           =   5415
+      _ExtentX        =   9551
+      _ExtentY        =   1085
+      MouseTrack      =   -1  'True
+      Caption         =   "FrmStart.frx":00A2
       Transparent     =   -1  'True
    End
    Begin VB.Label Label 
@@ -123,6 +135,11 @@ Private Sub cmdExit_Click()
 End Sub
 
 Private Sub cmdStation_Click()
+    frmStation.Show
+    Unload Me
+End Sub
+
+Private Sub cmdTicket_Click()
     frmTicket.Show
     Unload Me
 End Sub

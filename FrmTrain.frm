@@ -3,7 +3,7 @@ Object = "{379157C5-E9BD-43F1-9F83-B037496BED42}#1.2#0"; "VBCCR18.OCX"
 Begin VB.Form frmTrain 
    BorderStyle     =   1  'Fixed Single
    Caption         =   "根据车次查询列车时刻表"
-   ClientHeight    =   5520
+   ClientHeight    =   5565
    ClientLeft      =   45
    ClientTop       =   390
    ClientWidth     =   8910
@@ -18,7 +18,7 @@ Begin VB.Form frmTrain
    EndProperty
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
-   ScaleHeight     =   5520
+   ScaleHeight     =   5565
    ScaleWidth      =   8910
    StartUpPosition =   2  '屏幕中心
    Begin 列车时刻表.TrainNoPicker tpTrainNo 
@@ -31,13 +31,13 @@ Begin VB.Form frmTrain
       _ExtentY        =   4048
    End
    Begin VBCCR18.ListView lsvResult 
-      Height          =   4215
+      Height          =   4300
       Left            =   240
       TabIndex        =   0
       Top             =   720
       Width           =   8415
       _ExtentX        =   14843
-      _ExtentY        =   7435
+      _ExtentY        =   7594
       View            =   3
       FullRowSelect   =   -1  'True
       GridLines       =   -1  'True
@@ -62,7 +62,7 @@ Begin VB.Form frmTrain
       Align           =   2  'Align Bottom
       Height          =   375
       Left            =   0
-      Top             =   5145
+      Top             =   5190
       Width           =   8910
       _ExtentX        =   15716
       _ExtentY        =   661
@@ -134,7 +134,6 @@ Private m_asyncSearch As AsyncRequest
 Private m_strPQ_TrainCode As String
 Private m_strPQ_TrainNoFull As String
 Private m_strPQ_Date As String
-Private m_strPQ_DateDash As String
 
 Private Sub Form_Load()
     datePicker.value = Date
@@ -143,7 +142,7 @@ Private Sub Form_Load()
 
     With lsvResult.ColumnHeaders
         .Add , , "站序", 600
-        .Add , , "车站", 1800
+        .Add , , "车站", 1100
         .Add , , "车次", 800
         .Add , , "出发时间", 1000
         .Add , , "到达时间", 1000
@@ -178,8 +177,7 @@ Private Sub cmdQuery_Click()
     cmdQuery.Enabled = False
     m_strPQ_TrainCode = strTrainCode
     m_strPQ_TrainNoFull = tpTrainNo.GetTrainNoByCode(strTrainCode)
-    m_strPQ_Date = Format(datePicker.value, "yyyyMMdd")
-    m_strPQ_DateDash = Format(datePicker.value, "yyyy-MM-dd")
+    m_strPQ_Date = Format(datePicker.value, "yyyy-MM-dd")
     
     If Len(m_strPQ_TrainNoFull) = 0 Then
         statusBar.Panels(1).Text = "正在查询车次编号……"
@@ -231,7 +229,7 @@ Private Sub StartPhase2()
         Set m_asyncSearch = Nothing
     End If
     statusBar.Panels(1).Text = "正在查询停靠站信息……"
-    strUrl = "https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no=" & EncodeURL(m_strPQ_TrainNoFull) & "&leftTicketDTO.train_date=" & m_strPQ_DateDash
+    strUrl = "https://kyfw.12306.cn/otn/queryTrainInfo/query?leftTicketDTO.train_no=" & EncodeURL(m_strPQ_TrainNoFull) & "&leftTicketDTO.train_date=" & m_strPQ_Date
     Set m_asyncSearch = New AsyncRequest
     m_asyncSearch.GetRequest strUrl, Me, "OnPhase2Complete"
 End Sub
@@ -259,8 +257,7 @@ End Sub
 Public Sub QueryTrainDirectly(ByVal trainCode As String, ByVal trainNo As String)
     m_strPQ_TrainCode = trainCode
     m_strPQ_TrainNoFull = trainNo
-    m_strPQ_Date = Format(datePicker.value, "yyyyMMdd")
-    m_strPQ_DateDash = Format(datePicker.value, "yyyy-MM-dd")
+    m_strPQ_Date = Format(datePicker.value, "yyyy-MM-dd")
     tpTrainNo.Text = trainCode
     lsvResult.ListItems.Clear
     cmdQuery.Enabled = False

@@ -37,6 +37,35 @@ ErrHandler:
     Err.Raise Err.Number, "AsyncRequest.GetRequest", Err.Description
 End Sub
 
+Public Sub PostRequest(ByVal url As String, ByVal postBody As String, ByRef callbackTarget As Object, ByVal callbackMethod As String, Optional ByRef extraHeaders As Object = Nothing)
+    On Error GoTo ErrHandler
+    
+    Set m_callbackTarget = callbackTarget
+    m_callbackMethod = callbackMethod
+    m_aborted = False
+    
+    Set m_xmlhttp = CreateObject("MSXML2.ServerXMLHTTP.6.0")
+    m_xmlhttp.setOption 2, 13056
+    
+    On Error GoTo ErrHandler
+    m_xmlhttp.Open "POST", url, True
+    m_xmlhttp.onreadystatechange = Me
+    m_xmlhttp.setRequestHeader "Content-Type", "application/x-www-form-urlencoded"
+    
+    If Not extraHeaders Is Nothing Then
+        Dim key As Variant
+        For Each key In extraHeaders
+            m_xmlhttp.setRequestHeader CStr(key), CStr(extraHeaders(key))
+        Next
+    End If
+    
+    m_xmlhttp.Send postBody
+    
+    Exit Sub
+ErrHandler:
+    Err.Raise Err.Number, "AsyncRequest.PostRequest", Err.Description
+End Sub
+
 Public Sub DefaultProc()
 Attribute DefaultProc.VB_UserMemId = 0
     On Error Resume Next
